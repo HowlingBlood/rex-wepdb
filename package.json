@@ -1,12 +1,14 @@
 {
   "name": "weapon-atlas-lab",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "type": "module",
   "description": "通用武器数据维护、人体伤害展示与 TTK 计算工具",
   "scripts": {
     "start": "node server.mjs",
-    "test": "node --test tests/*.test.mjs"
+    "test": "node --test tests/*.test.mjs",
+    "build:visitor": "node scripts/build-visitor.mjs",
+    "start:visitor": "node scripts/serve-visitor.mjs"
   },
   "engines": {
     "node": ">=20"

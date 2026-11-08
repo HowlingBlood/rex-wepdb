@@ -1,0 +1,75 @@
+{
+  "sourceRepository": "https://github.com/be5invis/Sarasa-Gothic",
+  "licenseSources": [
+    "https://github.com/be5invis/Sarasa-Gothic/blob/v0.36.5/LICENSE",
+    "https://github.com/be5invis/Sarasa-Gothic/blob/v0.36.2/LICENSE"
+  ],
+  "licenseFile": "LICENSE-Sarasa-Gothic.txt",
+  "compression": {
+    "fontTools": "4.68.0",
+    "brotli": "1.2.1",
+    "glyphSubset": false
+  },
+  "fonts": [
+    {
+      "sourceFile": "sarasa-ui-sc-regular.ttf",
+      "sourceSha256": "f453403514c1920c4c511aead1f8398c0fd53554b6bfd836a581f4c7450c5360",
+      "sourceBytes": 23371364,
+      "webFile": "sarasa-ui-sc-regular.woff2",
+      "webBytes": 8378708,
+      "glyphs": 48403,
+      "mappedCodePoints": 46319,
+      "nameRecords": {
+        "0": [
+          "Copyright (c) 2015-2022, Renzhi Li (aka. Belleve Invis, belleve@typeof.net). Portions Copyright (c) 2016-2020 The Inter Project Authors. Portions Copyright (c) 2014, 2015 Adobe Systems Incorporated (http://www.adobe.com/). Portions Copyright (c) 2012 Google Inc."
+        ],
+        "1": [
+          "Sarasa UI SC",
+          "更纱黑体 UI SC"
+        ],
+        "4": [
+          "Sarasa UI SC",
+          "更纱黑体 UI SC"
+        ],
+        "5": [
+          "Version 0.36.5; ttfautohint (v1.8.4)"
+        ],
+        "6": [
+          "Sarasa-UI-SC-Regular"
+        ],
+        "13": [],
+        "14": []
+      }
+    },
+    {
+      "sourceFile": "sarasa-mono-sc-regular.ttf",
+      "sourceSha256": "651de0ec888da4795f2c5919e103a6f70c58935337bbaca1278518399bcd1755",
+      "sourceBytes": 23794360,
+      "webFile": "sarasa-mono-sc-regular.woff2",
+      "webBytes": 8473160,
+      "glyphs": 52620,
+      "mappedCodePoints": 48629,
+      "nameRecords": {
+        "0": [
+          "Copyright (c) 2015-2022, Renzhi Li (aka. Belleve Invis, belleve@typeof.net). Portions Copyright (c) 2016-2020 The Inter Project Authors. Portions Copyright (c) 2014, 2015 Adobe Systems Incorporated (http://www.adobe.com/). Portions Copyright (c) 2012 Google Inc."
+        ],
+        "1": [
+          "Sarasa Mono SC",
+          "等距更纱黑体 SC"
+        ],
+        "4": [
+          "Sarasa Mono SC",
+          "等距更纱黑体 SC"
+        ],
+        "5": [
+          "Version 0.36.2; ttfautohint (v1.8.4)"
+        ],
+        "6": [
+          "Sarasa-Mono-SC-Regular"
+        ],
+        "13": [],
+        "14": []
+      }
+    }
+  ]
+}

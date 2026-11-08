@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#101316">
+  <meta name="description" content="按模式查看使命召唤武器部位伤害、TTK、BTK，比较历史数据与武器表现。">
+  <title>WEAPON ATLAS · 武器数据库</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./fonts.css?v=1.2.0">
+  <link rel="stylesheet" href="./styles.css?v=1.2.0">
+  <link rel="stylesheet" href="./visuals.css?v=1.2.0">
+  <link rel="stylesheet" href="./visitor.css?v=1.2.0">
+  <link rel="stylesheet" href="./history.css?v=1.2.0">
+</head>
+<body class="visitor-app">
+  <header class="app-header">
+    <a class="brand" href="#analysis" aria-label="武器数据库首页"><span class="brand-mark">W<span>Λ</span></span><span>WEAPON ATLAS<small>武器数据库</small></span></a>
+    <nav class="main-nav" aria-label="主导航"><button data-view="analysis" class="active">武器分析</button><button data-view="history">历史对比</button></nav>
+    <div class="header-actions"><span class="tag outline">PUBLIC DATABASE</span><button id="refresh-data" class="button ghost compact">↻ 刷新数据</button><button id="method-button" class="text-button">计算口径 ↗</button></div>
+  </header>
+  <section class="visitor-mode-bar" aria-label="游戏模式"><div class="mode-bar-label"><span class="eyebrow">SELECT MODE</span><strong>选择模式</strong></div><div id="mode-buttons" class="visitor-mode-buttons"></div><div id="database-version" class="visitor-version" aria-live="polite">正在读取版本清单…</div></section>
+  <div class="app-shell">
+    <aside class="sidebar" aria-label="武器库">
+      <div class="sidebar-heading"><span>武器库 <span id="weapon-count" class="count">0</span></span><span class="eyebrow">ARMORY</span></div>
+      <label class="search-box"><span aria-hidden="true">⌕</span><input id="weapon-search" type="search" placeholder="搜索武器名称" aria-label="搜索武器"></label>
+      <select id="category-filter" aria-label="筛选武器类别"><option value="">全部类别</option></select>
+      <div class="roster-help"><span>勾选加入对比 ↓</span><button id="clear-selection" type="button" class="text-button" disabled>取消已选</button></div>
+      <div id="weapon-roster" class="weapon-roster"></div>
+      <div class="sidebar-bottom"><button id="free-calculator" class="button full">自由试算 <span>↗</span></button><div class="sidebar-note"><span class="tiny-cross">＋</span><p>在同一条件下，理解每一次命中<small>MODE DATA · VERSION HISTORY</small></p></div></div>
+    </aside>
+    <main id="main-content" tabindex="-1" aria-live="polite"></main>
+  </div>
+  <footer class="app-footer"><span>WEAPON ATLAS <b>/</b> 武器数据与版本对比</span><span>首发扣扳机计时 · 全程部位倍率 · 默认全部命中</span><span>数据版本与说明以模式清单为准</span></footer>
+  <dialog id="app-dialog" class="app-dialog"></dialog><div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <noscript><p class="empty-state">请启用 JavaScript 使用模式数据库和计算器。</p></noscript>
+  <script type="module" src="./visitor-app.js?v=1.2.0"></script>
+</body>
+</html>

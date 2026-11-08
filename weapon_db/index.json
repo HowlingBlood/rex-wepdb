@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "defaultMode": "wz",
+  "updatedAt": "2026-11-08",
+  "modes": [
+    {
+      "id": "mp",
+      "label": "多人模式",
+      "description": "多人模式数据库待补充，仍可使用自由试算。",
+      "latest": "latest-mp.json",
+      "currentVersion": null,
+      "available": false,
+      "versions": []
+    },
+    {
+      "id": "wz",
+      "label": "战争地带",
+      "description": "战争地带武器数据与击杀时间分析。",
+      "latest": "latest-wz.json",
+      "currentVersion": "wz-20261108-r1",
+      "available": true,
+      "versions": [
+        {
+          "id": "wz-20261108-r1",
+          "label": "首版登记 · 2026-11-08",
+          "effectiveAt": "2026-11-08",
+          "file": "history/wz/2026-11-08-r1.json",
+          "notes": "现有维护库首次登记，日期不代表游戏补丁生效时间。"
+        }
+      ]
+    }
+  ]
+}
