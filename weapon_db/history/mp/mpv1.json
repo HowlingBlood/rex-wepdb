@@ -1,0 +1,1881 @@
+{
+  "schemaVersion": 1,
+  "name": "现代战争4第一赛季数据库",
+  "updatedAt": "2026-11-08T23:00:00.788Z",
+  "weapons": [
+    {
+      "id": "dd08637b-c197-46dc-876c-8ab81a42856f",
+      "name": "ISO夜影",
+      "category": "冲锋枪（MP）",
+      "notes": "",
+      "velocity": 530,
+      "triggerDelayMs": 0,
+      "ranges": [
+        {
+          "until": 12,
+          "damage": 21
+        },
+        {
+          "until": 20,
+          "damage": 17
+        },
+        {
+          "until": 28,
+          "damage": 15
+        },
+        {
+          "until": null,
+          "damage": 14
+        }
+      ],
+      "multipliers": {
+        "head": 1.29,
+        "neck": 1,
+        "chest": 1,
+        "abdomen": 1,
+        "upperArm": 1,
+        "forearm": 1,
+        "thigh": 0.9,
+        "calf": 0.9
+      },
+      "modes": [
+        {
+          "id": "b0642b75-6144-4bb6-8f70-5d6cae7be5d1",
+          "name": "全自动",
+          "type": "auto",
+          "rpm": 923,
+          "cycleMs": 1000,
+          "burstSize": 3,
+          "gapMs": 200
+        }
+      ]
+    },
+    {
+      "id": "6b3c3513-ec76-4e18-af2f-d694674a2d83",
+      "name": "汉86",
+      "category": "突击步枪（MP）",
+      "notes": "",
+      "velocity": 615,
+      "triggerDelayMs": 0,
+      "ranges": [
+        {
+          "until": 30,
+          "damage": 23
+        },
+        {
+          "until": null,
+          "damage": 219
+        }
+      ],
+      "multipliers": {
+        "head": 1.26,
+        "neck": 1,
+        "chest": 1,
+        "abdomen": 1,
+        "upperArm": 1,
+        "forearm": 1,
+        "thigh": 1,
+        "calf": 1
+      },
+      "modes": [
+        {
+          "id": "c7f55dd0-b604-44e9-9c75-29249e5e5a9a",
+          "name": "全自动",
+          "type": "auto",
+          "rpm": 741,
+          "cycleMs": 1000,
+          "burstSize": 3,
+          "gapMs": 200
+        }
+      ]
+    },
+    {
+      "id": "871deaa7-2ef7-48b0-92fc-369be49283a3",
+      "name": "M4",
+      "category": "突击步枪（MP）",
+      "notes": "",
+      "velocity": 590,
+      "triggerDelayMs": 0,
+      "ranges": [
+        {
+          "until": 28,
+          "damage": 23
+        },
+        {
+          "until": null,
+          "damage": 19
+        }
+      ],
+      "multipliers": {
+        "head": 0.85,
+        "neck": 0.68,
+        "chest": 0.68,
+        "abdomen": 0.68,
+        "upperArm": 0.68,
+        "forearm": 0.68,
+        "thigh": 0.68,
+        "calf": 0.68
+      },
+      "modes": [
+        {
+          "id": "8bfe3ff0-584c-4282-9f29-e47741419624",
+          "name": "全自动",
+          "type": "auto",
+          "rpm": 811,
+          "cycleMs": 1000,
+          "burstSize": 3,
+          "gapMs": 200
+        }
+      ]
+    },
+    {
+      "id": "bb01211b-eb97-4371-b5af-4b63197d61c1",
+      "name": "玄铁（未完成）",
+      "category": "突击步枪（MP）",
+      "notes": "未完成",
+      "velocity": 775,
+      "triggerDelayMs": 0,
+      "ranges": [
+        {
+          "until": 21,
+          "damage": 31
+        },
+        {
+          "until": 43,
+          "damage": 25
+        },
+        {
+          "until": null,
+          "damage": 18
+        }
+      ],
+      "multipliers": {
+        "head": 1.29,
+        "neck": 1.1,
+        "chest": 1.1,
+        "abdomen": 1,
+        "upperArm": 1,
+        "forearm": 1,
+        "thigh": 1,
+        "calf": 1
+      },
+      "modes": [
+        {
+          "id": "074fe03e-0433-4ef4-8d45-851d2c5b3caa",
+          "name": "全自动",
+          "type": "auto",
+          "rpm": 375,
+          "cycleMs": 1000,
+          "burstSize": 3,
+          "gapMs": 200
+        }
+      ]
+    },
+    {
+      "id": "bdf5d800-f2f7-46bf-aeb0-a2311c37747d",
+      "name": "卡斯托夫762",
+      "category": "突击步枪（MP）",
+      "notes": "",
+      "velocity": 560,
+      "triggerDelayMs": 0,
+      "ranges": [
+        {
+          "until": 27,
+          "damage": 30
+        },
+        {
+          "until": 42,
+          "damage": 25
+        },
+        {
+          "until": null,
+          "damage": 22
+        }
+      ],
+      "multipliers": {
+        "head": 1.33,
+        "neck": 1.1,
+        "chest": 1.1,
+        "abdomen": 1,
+        "upperArm": 1,
+        "forearm": 1,
+        "thigh": 1,
+        "calf": 1
+      },
+      "modes": [
+        {
+          "id": "07cad068-f612-4c82-976f-e8ab8c2b1e11",
+          "name": "全自动",
+          "type": "auto",
+          "rpm": 600,
+          "cycleMs": 1000,
+          "burstSize": 3,
+          "gapMs": 200
+        }
+      ]
+    },
+    {
+      "id": "8d2944d6-532b-4fb1-97e0-fa3ad773d236",
+      "name": "爱国者XMR",
+      "category": "突击步枪（MP）",
+      "notes": "",
+      "velocity": 620,
+      "triggerDelayMs": 0,
+      "ranges": [
+        {
+          "until": 34,
+          "damage": 30
+        },
+        {
+          "until": 50,
+          "damage": 24
+        },
+        {
+          "until": null,
+          "damage": 22
+        }
+      ],
+      "multipliers": {
+        "head": 1.3,
+        "neck": 1,
+        "chest": 1,
+        "abdomen": 1,
+        "upperArm": 1,
+        "forearm": 1,
+        "thigh": 1,
+        "calf": 1
+      },
+      "modes": [
+        {
+          "id": "ab443161-1663-4c62-8a04-3e1b2d9bf9ac",
+          "name": "全自动",
+          "type": "auto",
+          "rpm": 645,
+          "cycleMs": 1000,
+          "burstSize": 3,
+          "gapMs": 200
+        }
+      ]
+    },
+    {
+      "id": "08d22f87-9b82-45fe-ba3d-65dc30e1033b",
+      "name": "欧登",
+      "category": "突击步枪（MP）",
+      "notes": "",
+      "velocity": 690,
+      "triggerDelayMs": 0,
+      "ranges": [
+        {
+          "until": 33,
+          "damage": 41
+        },
+        {
+          "until": 50,
+          "damage": 36
+        },
+        {
+          "until": null,
+          "damage": 32
+        }
+      ],
+      "multipliers": {
+        "head": 1.39,
+        "neck": 1.1,
+        "chest": 1.1,
+        "abdomen": 1,
+        "upperArm": 1,
+        "forearm": 1,
+        "thigh": 1,
+        "calf": 1
+      },
+      "modes": [
+        {
+          "id": "26be5daf-37d3-4906-a6ea-cfe9e3f25215",
+          "name": "全自动",
+          "type": "auto",
+          "rpm": 414,
+          "cycleMs": 1000,
+          "burstSize": 3,
+          "gapMs": 200
+        }
+      ]
+    },
+    {
+      "id": "85b1b4eb-ed57-460f-9e31-443df60cca17",
+      "name": "阿克西恩",
+      "category": "突击步枪（MP）",
+      "notes": "",
+      "velocity": 470,
+      "triggerDelayMs": 0,
+      "ranges": [
+        {
+          "until": 25,
+          "damage": 24
+        },
+        {
+          "until": 39,
+          "damage": 22
+        },
+        {
+          "until": null,
+          "damage": 20
+        }
+      ],
+      "multipliers": {
+        "head": 1.33,
+        "neck": 1.08,
+        "chest": 1.08,
+        "abdomen": 1,
+        "upperArm": 1,
+        "forearm": 1,
+        "thigh": 1,
+        "calf": 1
+      },
+      "modes": [
+        {
+          "id": "f2dbab8d-46fc-421e-83d1-1458ff366e7d",
+          "name": "全自动",
+          "type": "auto",
+          "rpm": 706,
+          "cycleMs": 1000,
+          "burstSize": 3,
+          "gapMs": 200
+        }
+      ]
+    },
+    {
+      "id": "64f737dc-f757-4741-ae65-134efaa710db",
+      "name": "克洛南烈风",
+      "category": "突击步枪（MP）",
+      "notes": "",
+      "velocity": 660,
+      "triggerDelayMs": 45,
+      "ranges": [
+        {
+          "until": 26,
+          "damage": 28
+        },
+        {
+          "until": 37,
+          "damage": 26
+        },
+        {
+          "until": null,
+          "damage": 22
+        }
+      ],
+      "multipliers": {
+        "head": 1.32,
+        "neck": 1.07,
+        "chest": 1.07,
+        "abdomen": 1,
+        "upperArm": 1,
+        "forearm": 1,
+        "thigh": 1,
+        "calf": 1
+      },
+      "modes": [
+        {
+          "id": "4059e5cc-cc49-46f8-a307-2ef5abeb0405",
+          "name": "全自动",
+          "type": "auto",
+          "rpm": 674,
+          "cycleMs": 1000,
+          "burstSize": 3,
+          "gapMs": 200
+        }
+      ]
+    },
+    {
+      "id": "8f4c2afa-8081-4379-beab-6554cf664bcd",
+      "name": "克洛南鱼鹰",
+      "category": "突击步枪（MP）",
+      "notes": "",
+      "velocity": 590,
+      "triggerDelayMs": 0,
+      "ranges": [
+        {
+          "until": 25,
+          "damage": 21
+        },
+        {
+          "until": 41,
+          "damage": 18
+        },
+        {
+          "until": null,
+          "damage": 16
+        }
+      ],
+      "multipliers": {
+        "head": 1.29,
+        "neck": 1.1,
+        "chest": 1.1,
+        "abdomen": 1,
+        "upperArm": 1,
+        "forearm": 1,
+        "thigh": 1,
+        "calf": 1
+      },
+      "modes": [
+        {
+          "id": "4ae77cde-a62d-45b8-ae9f-08df23585605",
+          "name": "全自动",
+          "type": "auto",
+          "rpm": 674,
+          "cycleMs": 1000,
+          "burstSize": 3,
+          "gapMs": 200
+        }
+      ]
+    },
+    {
+      "id": "bd9e9ae0-562c-4884-b103-09621d2cec47",
+      "name": "威尔46",
+      "category": "冲锋枪（MP）",
+      "notes": "",
+      "velocity": 565,
+      "triggerDelayMs": 0,
+      "ranges": [
+        {
+          "until": 10,
+          "damage": 20
+        },
+        {
+          "until": 17,
+          "damage": 17
+        },
+        {
+          "until": 24,
+          "damage": 15
+        },
+        {
+          "until": null,
+          "damage": 14
+        }
+      ],
+      "multipliers": {
+        "head": 1.3,
+        "neck": 1,
+        "chest": 1,
+        "abdomen": 1,
+        "upperArm": 1,
+        "forearm": 1,
+        "thigh": 0.95,
+        "calf": 0.95
+      },
+      "modes": [
+        {
+          "id": "8dfd8f7b-a2d8-42bb-bae4-7883bd777fdb",
+          "name": "全自动",
+          "type": "auto",
+          "rpm": 953,
+          "cycleMs": 1000,
+          "burstSize": 3,
+          "gapMs": 200
+        }
+      ]
+    },
+    {
+      "id": "52a969bd-7d5b-4aa4-bc76-3d0f3de53f3b",
+      "name": "WZ55斯崔加",
+      "category": "冲锋枪（MP）",
+      "notes": "",
+      "velocity": 380,
+      "triggerDelayMs": 64,
+      "ranges": [
+        {
+          "until": 12,
+          "damage": 27
+        },
+        {
+          "until": 21,
+          "damage": 23
+        },
+        {
+          "until": null,
+          "damage": 19
+        }
+      ],
+      "multipliers": {
+        "head": 1.37,
+        "neck": 1,
+        "chest": 1,
+        "abdomen": 1,
+        "upperArm": 1,
+        "forearm": 1,
+        "thigh": 0.93,
+        "calf": 0.93
+      },
+      "modes": [
+        {
+          "id": "0f634e96-3ac6-4085-a52a-b351c15e28a5",
+          "name": "全自动",
+          "type": "auto",
+          "rpm": 651,
+          "cycleMs": 1000,
+          "burstSize": 3,
+          "gapMs": 200
+        }
+      ]
+    },
+    {
+      "id": "da72c309-c4a1-44ef-ba2a-bc9b20458eae",
+      "name": "PPSH-41",
+      "category": "冲锋枪（MP）",
+      "notes": "",
+      "velocity": 550,
+      "triggerDelayMs": 37,
+      "ranges": [
+        {
+          "until": 11,
+          "damage": 18
+        },
+        {
+          "until": 20,
+          "damage": 16
+        },
+        {
+          "until": 29,
+          "damage": 14
+        },
+        {
+          "until": null,
+          "damage": 13
+        }
+      ],
+      "multipliers": {
+        "head": 1.28,
+        "neck": 1,
+        "chest": 1,
+        "abdomen": 1,
+        "upperArm": 1,
+        "forearm": 1,
+        "thigh": 0.94,
+        "calf": 0.94
+      },
+      "modes": [
+        {
+          "id": "d3f7e5f3-def5-4497-9aef-e683f64b530e",
+          "name": "全自动",
+          "type": "auto",
+          "rpm": 1110,
+          "cycleMs": 1000,
+          "burstSize": 3,
+          "gapMs": 200
+        }
+      ]
+    },
+    {
+      "id": "38e4569f-31f5-4f39-b020-c122fdd3f46d",
+      "name": "X-58夜神",
+      "category": "冲锋枪（MP）",
+      "notes": "",
+      "velocity": 450,
+      "triggerDelayMs": 0,
+      "ranges": [
+        {
+          "until": 11,
+          "damage": 22
+        },
+        {
+          "until": 20,
+          "damage": 18
+        },
+        {
+          "until": 30,
+          "damage": 16
+        },
+        {
+          "until": null,
+          "damage": 14
+        }
+      ],
+      "multipliers": {
+        "head": 0.82,
+        "neck": 1,
+        "chest": 1,
+        "abdomen": 1,
+        "upperArm": 1,
+        "forearm": 1,
+        "thigh": 0.91,
+        "calf": 0.91
+      },
+      "modes": [
+        {
+          "id": "7da809fc-8c36-4032-8a20-d08b0322f7c9",
+          "name": "全自动",
+          "type": "auto",
+          "rpm": 800,
+          "cycleMs": 1000,
+          "burstSize": 3,
+          "gapMs": 200
+        }
+      ]
+    },
+    {
+      "id": "b4c8c92c-6cb4-47a8-991c-c9baa744ddbe",
+      "name": "CSG-35",
+      "category": "冲锋枪（MP）",
+      "notes": "",
+      "velocity": 540,
+      "triggerDelayMs": 0,
+      "ranges": [
+        {
+          "until": 10,
+          "damage": 17
+        },
+        {
+          "until": 19,
+          "damage": 15
+        },
+        {
+          "until": 26,
+          "damage": 14
+        },
+        {
+          "until": null,
+          "damage": 13
+        }
+      ],
+      "multipliers": {
+        "head": 1.35,
+        "neck": 1,
+        "chest": 1,
+        "abdomen": 1,
+        "upperArm": 1,
+        "forearm": 1,
+        "thigh": 0.94,
+        "calf": 0.94
+      },
+      "modes": [
+        {
+          "id": "974eaa9f-228f-4f3a-b6c9-2045232c972e",
+          "name": "全自动",
+          "type": "auto",
+          "rpm": 1200,
+          "cycleMs": 1000,
+          "burstSize": 3,
+          "gapMs": 200
+        }
+      ]
+    },
+    {
+      "id": "52c327ef-679a-4c20-9f9b-d156f79372e1",
+      "name": "雷兹12",
+      "category": "霰弹枪（MP）",
+      "notes": "",
+      "velocity": 340,
+      "triggerDelayMs": 0,
+      "ranges": [
+        {
+          "until": 3,
+          "damage": 100
+        },
+        {
+          "until": 4,
+          "damage": 34
+        },
+        {
+          "until": 6,
+          "damage": 25
+        },
+        {
+          "until": 9,
+          "damage": 20
+        },
+        {
+          "until": null,
+          "damage": 14
+        }
+      ],
+      "multipliers": {
+        "head": 1,
+        "neck": 1,
+        "chest": 1,
+        "abdomen": 1,
+        "upperArm": 1,
+        "forearm": 1,
+        "thigh": 1,
+        "calf": 0.8
+      },
+      "modes": [
+        {
+          "id": "a2f6ca91-c8b4-4be7-ae80-3ccb34cefbb5",
+          "name": "半自动",
+          "type": "semi",
+          "rpm": 150,
+          "cycleMs": 733,
+          "burstSize": 3,
+          "gapMs": 200
+        }
+      ]
+    },
+    {
+      "id": "2ffcc5b0-7354-49ee-98d7-7edf9b614ff3",
+      "name": "战将",
+      "category": "霰弹枪（MP）",
+      "notes": "未完成",
+      "velocity": 325,
+      "triggerDelayMs": 0,
+      "ranges": [
+        {
+          "until": 3,
+          "damage": 70
+        },
+        {
+          "until": 4,
+          "damage": 34
+        },
+        {
+          "until": 7,
+          "damage": 25
+        },
+        {
+          "until": 13,
+          "damage": 18
+        },
+        {
+          "until": null,
+          "damage": 14
+        }
+      ],
+      "multipliers": {
+        "head": 1.03,
+        "neck": 1.03,
+        "chest": 1.03,
+        "abdomen": 1.01,
+        "upperArm": 1,
+        "forearm": 1,
+        "thigh": 1,
+        "calf": 1
+      },
+      "modes": [
+        {
+          "id": "72a84a55-b375-438f-a3f7-c78901a6034d",
+          "name": "点射",
+          "type": "burst",
+          "rpm": 720,
+          "cycleMs": 1000,
+          "burstSize": 3,
+          "gapMs": 200
+        }
+      ]
+    },
+    {
+      "id": "b46f7c40-d686-4c35-9840-b03a3dd236a6",
+      "name": "菲恩",
+      "category": "轻机枪（MP）",
+      "notes": "",
+      "velocity": 710,
+      "triggerDelayMs": 50,
+      "ranges": [
+        {
+          "until": 22,
+          "damage": 30
+        },
+        {
+          "until": 41,
+          "damage": 28
+        },
+        {
+          "until": null,
+          "damage": 26
+        }
+      ],
+      "multipliers": {
+        "head": 1.3,
+        "neck": 1.1,
+        "chest": 1.1,
+        "abdomen": 1,
+        "upperArm": 1,
+        "forearm": 1,
+        "thigh": 1,
+        "calf": 1
+      },
+      "modes": [
+        {
+          "id": "5fe946d5-e9b3-4457-871f-fbbfdf0cd208",
+          "name": "全自动",
+          "type": "auto",
+          "rpm": 588,
+          "cycleMs": 1000,
+          "burstSize": 3,
+          "gapMs": 200
+        }
+      ]
+    },
+    {
+      "id": "21e3fb84-d740-486f-b294-85f056fec0ee",
+      "name": "73式",
+      "category": "轻机枪（MP）",
+      "notes": "",
+      "velocity": 690,
+      "triggerDelayMs": 57,
+      "ranges": [
+        {
+          "until": 26,
+          "damage": 22
+        },
+        {
+          "until": 47,
+          "damage": 21
+        },
+        {
+          "until": null,
+          "damage": 19
+        }
+      ],
+      "multipliers": {
+        "head": 1.27,
+        "neck": 1.09,
+        "chest": 1.09,
+        "abdomen": 1,
+        "upperArm": 1,
+        "forearm": 1,
+        "thigh": 1,
+        "calf": 1
+      },
+      "modes": [
+        {
+          "id": "b3035528-22af-40c2-8230-a936a174e477",
+          "name": "全自动",
+          "type": "auto",
+          "rpm": 821,
+          "cycleMs": 1000,
+          "burstSize": 3,
+          "gapMs": 200
+        }
+      ]
+    },
+    {
+      "id": "d9d8e625-8df6-4bf3-96d6-0707ffda0e61",
+      "name": "APOC-338",
+      "category": "轻机枪（MP）",
+      "notes": "",
+      "velocity": 130,
+      "triggerDelayMs": 75,
+      "ranges": [
+        {
+          "until": 23,
+          "damage": 41
+        },
+        {
+          "until": 48,
+          "damage": 37
+        },
+        {
+          "until": null,
+          "damage": 32
+        }
+      ],
+      "multipliers": {
+        "head": 1.29,
+        "neck": 1.1,
+        "chest": 1.1,
+        "abdomen": 1,
+        "upperArm": 1,
+        "forearm": 1,
+        "thigh": 1,
+        "calf": 1
+      },
+      "modes": [
+        {
+          "id": "e207aafe-f245-469a-98ab-8839c2a121db",
+          "name": "全自动",
+          "type": "auto",
+          "rpm": 555,
+          "cycleMs": 1000,
+          "burstSize": 3,
+          "gapMs": 200
+        }
+      ]
+    },
+    {
+      "id": "405c67be-d0c8-42d5-81d9-e3c3b0260cba",
+      "name": "MAR-9",
+      "category": "精确射手步枪（MP）",
+      "notes": "",
+      "velocity": 870,
+      "triggerDelayMs": 0,
+      "ranges": [
+        {
+          "until": 20,
+          "damage": 50
+        },
+        {
+          "until": 29,
+          "damage": 42
+        },
+        {
+          "until": null,
+          "damage": 37
+        }
+      ],
+      "multipliers": {
+        "head": 2,
+        "neck": 1.1,
+        "chest": 1.1,
+        "abdomen": 1,
+        "upperArm": 1,
+        "forearm": 1,
+        "thigh": 1,
+        "calf": 1
+      },
+      "modes": [
+        {
+          "id": "bb846b42-37ad-4f00-ac0a-59e64135465e",
+          "name": "半自动",
+          "type": "semi",
+          "rpm": 316,
+          "cycleMs": 1000,
+          "burstSize": 3,
+          "gapMs": 200
+        }
+      ]
+    },
+    {
+      "id": "d9069ae2-d94a-440c-9cf1-affa9d460fb6",
+      "name": "奥里斯8.6",
+      "category": "精确射手步枪（MP）",
+      "notes": "",
+      "velocity": 570,
+      "triggerDelayMs": 0,
+      "ranges": [
+        {
+          "until": 23,
+          "damage": 95
+        },
+        {
+          "until": 30,
+          "damage": 84
+        },
+        {
+          "until": 46,
+          "damage": 70
+        },
+        {
+          "until": null,
+          "damage": 63
+        }
+      ],
+      "multipliers": {
+        "head": 1.6,
+        "neck": 1.2,
+        "chest": 1.09,
+        "abdomen": 1,
+        "upperArm": 1,
+        "forearm": 1,
+        "thigh": 1,
+        "calf": 1
+      },
+      "modes": [
+        {
+          "id": "32fdf174-d215-4b66-8680-a7fccf4ff328",
+          "name": "栓动 / 泵动",
+          "type": "bolt",
+          "rpm": 720,
+          "cycleMs": 1000,
+          "burstSize": 3,
+          "gapMs": 200
+        }
+      ]
+    },
+    {
+      "id": "9f10cceb-3b89-4dcd-9f25-a23b7d98b3fc",
+      "name": "莫辛-纳甘",
+      "category": "精确射手步枪（MP）",
+      "notes": "",
+      "velocity": 700,
+      "triggerDelayMs": 0,
+      "ranges": [
+        {
+          "until": 40,
+          "damage": 93
+        },
+        {
+          "until": 56,
+          "damage": 86
+        },
+        {
+          "until": null,
+          "damage": 60
+        }
+      ],
+      "multipliers": {
+        "head": 1.7,
+        "neck": 1.19,
+        "chest": 1.1,
+        "abdomen": 1,
+        "upperArm": 1.1,
+        "forearm": 1,
+        "thigh": 1,
+        "calf": 1
+      },
+      "modes": [
+        {
+          "id": "cebb65fe-6325-472d-8dbd-81b26d611032",
+          "name": "栓动 / 泵动",
+          "type": "bolt",
+          "rpm": 720,
+          "cycleMs": 1767,
+          "burstSize": 3,
+          "gapMs": 200
+        }
+      ]
+    },
+    {
+      "id": "a91c4519-4add-4e13-bbae-f9d147ec02e4",
+      "name": "KG-7火神",
+      "category": "狙击步枪（MP）",
+      "notes": "",
+      "velocity": 740,
+      "triggerDelayMs": 0,
+      "ranges": [
+        {
+          "until": 68,
+          "damage": 102
+        },
+        {
+          "until": 86,
+          "damage": 99
+        },
+        {
+          "until": null,
+          "damage": 95
+        }
+      ],
+      "multipliers": {
+        "head": 2.64,
+        "neck": 1.65,
+        "chest": 1.65,
+        "abdomen": 1,
+        "upperArm": 1,
+        "forearm": 0.97,
+        "thigh": 0.97,
+        "calf": 0.97
+      },
+      "modes": [
+        {
+          "id": "e44efe79-27d6-4246-9124-86483393eb28",
+          "name": "栓动 / 泵动",
+          "type": "bolt",
+          "rpm": 720,
+          "cycleMs": 1633,
+          "burstSize": 3,
+          "gapMs": 200
+        }
+      ]
+    },
+    {
+      "id": "ca397b72-e2d2-496f-b504-7b4a6165e9d3",
+      "name": "点57阿塔罗斯",
+      "category": "狙击步枪（MP）",
+      "notes": "",
+      "velocity": 620,
+      "triggerDelayMs": 0,
+      "ranges": [
+        {
+          "until": 50,
+          "damage": 102
+        },
+        {
+          "until": 86,
+          "damage": 100
+        },
+        {
+          "until": null,
+          "damage": 99
+        }
+      ],
+      "multipliers": {
+        "head": 3.16,
+        "neck": 2.1,
+        "chest": 1.95,
+        "abdomen": 1.05,
+        "upperArm": 1,
+        "forearm": 0.98,
+        "thigh": 0.98,
+        "calf": 0.97
+      },
+      "modes": [
+        {
+          "id": "835358b1-d5ac-44ee-8852-c272c7d68d74",
+          "name": "栓动 / 泵动",
+          "type": "bolt",
+          "rpm": 720,
+          "cycleMs": 1600,
+          "burstSize": 3,
+          "gapMs": 200
+        }
+      ]
+    },
+    {
+      "id": "0f604ab2-f079-448d-bfc6-ec01c62a2ad1",
+      "name": "西格诺50",
+      "category": "狙击步枪（MP）",
+      "notes": "",
+      "velocity": 600,
+      "triggerDelayMs": 0,
+      "ranges": [
+        {
+          "until": 34,
+          "damage": 102
+        },
+        {
+          "until": 49,
+          "damage": 99
+        },
+        {
+          "until": 66,
+          "damage": 80
+        },
+        {
+          "until": null,
+          "damage": 75
+        }
+      ],
+      "multipliers": {
+        "head": 2.29,
+        "neck": 1.75,
+        "chest": 1.29,
+        "abdomen": 1,
+        "upperArm": 1.02,
+        "forearm": 0.94,
+        "thigh": 0.94,
+        "calf": 0.94
+      },
+      "modes": [
+        {
+          "id": "76d2b3b9-1110-461a-bfc3-05529659e977",
+          "name": "半自动",
+          "type": "semi",
+          "rpm": 111,
+          "cycleMs": 1000,
+          "burstSize": 3,
+          "gapMs": 200
+        }
+      ]
+    },
+    {
+      "id": "5cc3639a-614d-47f8-b072-f6f8ac09163d",
+      "name": "尚武9毫米",
+      "category": "手枪（MP）",
+      "notes": "",
+      "velocity": 370,
+      "triggerDelayMs": 0,
+      "ranges": [
+        {
+          "until": 9,
+          "damage": 40
+        },
+        {
+          "until": 19,
+          "damage": 33
+        },
+        {
+          "until": 26,
+          "damage": 28
+        },
+        {
+          "until": null,
+          "damage": 24
+        }
+      ],
+      "multipliers": {
+        "head": 1.5,
+        "neck": 1.2,
+        "chest": 1.2,
+        "abdomen": 1.1,
+        "upperArm": 1,
+        "forearm": 1,
+        "thigh": 1,
+        "calf": 1
+      },
+      "modes": [
+        {
+          "id": "cd9c5156-f25e-4d5b-84c3-6a8bb0c13e2f",
+          "name": "半自动",
+          "type": "semi",
+          "rpm": 370,
+          "cycleMs": 1000,
+          "burstSize": 3,
+          "gapMs": 200
+        }
+      ]
+    },
+    {
+      "id": "1fcfc8f5-8fdb-4d06-89f3-69872ffce62a",
+      "name": "环蛇P68",
+      "category": "手枪（MP）",
+      "notes": "",
+      "velocity": 250,
+      "triggerDelayMs": 0,
+      "ranges": [
+        {
+          "until": 9,
+          "damage": 46
+        },
+        {
+          "until": 21,
+          "damage": 39
+        },
+        {
+          "until": 37,
+          "damage": 34
+        },
+        {
+          "until": null,
+          "damage": 30
+        }
+      ],
+      "multipliers": {
+        "head": 1.28,
+        "neck": 1.09,
+        "chest": 1.09,
+        "abdomen": 1.09,
+        "upperArm": 1,
+        "forearm": 1,
+        "thigh": 1,
+        "calf": 1
+      },
+      "modes": [
+        {
+          "id": "50d5f90d-a278-4a95-be87-61546a4f61e3",
+          "name": "半自动",
+          "type": "semi",
+          "rpm": 261,
+          "cycleMs": 1000,
+          "burstSize": 3,
+          "gapMs": 200
+        }
+      ]
+    },
+    {
+      "id": "39b1e16b-ec07-48e4-b4db-94bc7dca2ff8",
+      "name": "点50GS",
+      "category": "手枪（MP）",
+      "notes": "",
+      "velocity": 460,
+      "triggerDelayMs": 0,
+      "ranges": [
+        {
+          "until": 22,
+          "damage": 70
+        },
+        {
+          "until": 42,
+          "damage": 58
+        },
+        {
+          "until": null,
+          "damage": 45
+        }
+      ],
+      "multipliers": {
+        "head": 1.5,
+        "neck": 1.1,
+        "chest": 1.1,
+        "abdomen": 1,
+        "upperArm": 1.1,
+        "forearm": 1,
+        "thigh": 1,
+        "calf": 1
+      },
+      "modes": [
+        {
+          "id": "f1bcfea6-ab8c-43d7-ba5c-7bca7e577fa8",
+          "name": "半自动",
+          "type": "semi",
+          "rpm": 167,
+          "cycleMs": 1000,
+          "burstSize": 3,
+          "gapMs": 200
+        }
+      ]
+    },
+    {
+      "id": "ca12c800-69c0-4361-9f65-7c2ea2144771",
+      "name": "莫哈韦点357",
+      "category": "手枪（MP）",
+      "notes": "",
+      "velocity": 400,
+      "triggerDelayMs": 64,
+      "ranges": [
+        {
+          "until": 25,
+          "damage": 64
+        },
+        {
+          "until": 31,
+          "damage": 52
+        },
+        {
+          "until": 40,
+          "damage": 48
+        },
+        {
+          "until": null,
+          "damage": 42
+        }
+      ],
+      "multipliers": {
+        "head": 1.8,
+        "neck": 1.19,
+        "chest": 1.19,
+        "abdomen": 1.09,
+        "upperArm": 1,
+        "forearm": 1,
+        "thigh": 1,
+        "calf": 1
+      },
+      "modes": [
+        {
+          "id": "2b9878ef-9aee-40a7-ad66-41bcb6cf743f",
+          "name": "半自动",
+          "type": "semi",
+          "rpm": 142,
+          "cycleMs": 1000,
+          "burstSize": 3,
+          "gapMs": 200
+        }
+      ]
+    },
+    {
+      "id": "969f42fd-2349-4063-908e-4202c7d2ca4e",
+      "name": "*M4[疾风]",
+      "category": "突击步枪（MP）",
+      "notes": "",
+      "velocity": 739.8,
+      "triggerDelayMs": 0,
+      "ranges": [
+        {
+          "until": 14,
+          "damage": 40
+        },
+        {
+          "until": 24,
+          "damage": 34
+        },
+        {
+          "until": null,
+          "damage": 30
+        }
+      ],
+      "multipliers": {
+        "head": 1.2,
+        "neck": 1,
+        "chest": 1,
+        "abdomen": 0.8,
+        "upperArm": 0.9,
+        "forearm": 0.9,
+        "thigh": 0.8,
+        "calf": 0.8
+      },
+      "modes": [
+        {
+          "id": "697c82e9-f2cc-4ae4-9ac5-40feb7624e61",
+          "name": "全自动",
+          "type": "auto",
+          "rpm": 698,
+          "cycleMs": 1000,
+          "burstSize": 3,
+          "gapMs": 200
+        }
+      ]
+    },
+    {
+      "id": "b277ea56-4f4c-47d6-91ba-22b1bcfc4129",
+      "name": "*玄铁[高速点射]",
+      "category": "突击步枪（MP）",
+      "notes": "",
+      "velocity": 930,
+      "triggerDelayMs": 0,
+      "ranges": [
+        {
+          "until": 40,
+          "damage": 50
+        },
+        {
+          "until": 55,
+          "damage": 43
+        },
+        {
+          "until": null,
+          "damage": 43
+        }
+      ],
+      "multipliers": {
+        "head": 1.2,
+        "neck": 1,
+        "chest": 1,
+        "abdomen": 0.9,
+        "upperArm": 1,
+        "forearm": 1,
+        "thigh": 0.9,
+        "calf": 0.9
+      },
+      "modes": [
+        {
+          "id": "ddb0dd7e-ee35-425e-a94d-9c854678aed5",
+          "name": "全自动",
+          "type": "auto",
+          "rpm": 462,
+          "cycleMs": 1000,
+          "burstSize": 3,
+          "gapMs": 200
+        }
+      ]
+    },
+    {
+      "id": "67f89c66-2006-47b9-b0ed-a0feee4d31e1",
+      "name": "*欧登[哨兵]",
+      "category": "突击步枪（MP）",
+      "notes": "",
+      "velocity": 895,
+      "triggerDelayMs": 0,
+      "ranges": [
+        {
+          "until": 13,
+          "damage": 144
+        },
+        {
+          "until": 36,
+          "damage": 142
+        },
+        {
+          "until": null,
+          "damage": 115
+        }
+      ],
+      "multipliers": {
+        "head": 1.3,
+        "neck": 0.8,
+        "chest": 0.8,
+        "abdomen": 0.6,
+        "upperArm": 0.6,
+        "forearm": 0.6,
+        "thigh": 0.6,
+        "calf": 0.6
+      },
+      "modes": [
+        {
+          "id": "c406f15e-82e4-4e27-bbbc-e6646447263c",
+          "name": "半自动",
+          "type": "semi",
+          "rpm": 140,
+          "cycleMs": 1000,
+          "burstSize": 3,
+          "gapMs": 200
+        }
+      ]
+    },
+    {
+      "id": "8ead38a7-6320-4689-849d-44082c08c18e",
+      "name": "*阿克西恩[劫掠者]",
+      "category": "突击步枪（MP）",
+      "notes": "",
+      "velocity": 880,
+      "triggerDelayMs": 0,
+      "ranges": [
+        {
+          "until": 38,
+          "damage": 40
+        },
+        {
+          "until": 55,
+          "damage": 34
+        },
+        {
+          "until": null,
+          "damage": 30
+        }
+      ],
+      "multipliers": {
+        "head": 1.3,
+        "neck": 1,
+        "chest": 1,
+        "abdomen": 0.9,
+        "upperArm": 1,
+        "forearm": 1,
+        "thigh": 0.9,
+        "calf": 0.9
+      },
+      "modes": [
+        {
+          "id": "4105472f-ad49-431b-a31e-e1f1f4e420a1",
+          "name": "全自动",
+          "type": "auto",
+          "rpm": 706,
+          "cycleMs": 1000,
+          "burstSize": 3,
+          "gapMs": 200
+        }
+      ]
+    },
+    {
+      "id": "3a076af9-eb79-4985-98a0-970571b5aeb0",
+      "name": "*克洛南鱼鹰[螺旋MK.II]",
+      "category": "突击步枪（MP）",
+      "notes": "",
+      "velocity": 882,
+      "triggerDelayMs": 0,
+      "ranges": [
+        {
+          "until": 40,
+          "damage": 38
+        },
+        {
+          "until": 52,
+          "damage": 35
+        },
+        {
+          "until": null,
+          "damage": 32
+        }
+      ],
+      "multipliers": {
+        "head": 1.2,
+        "neck": 1,
+        "chest": 1,
+        "abdomen": 0.9,
+        "upperArm": 1,
+        "forearm": 1,
+        "thigh": 0.9,
+        "calf": 0.9
+      },
+      "modes": [
+        {
+          "id": "0296f9e2-e759-4506-b247-1c37871b6a37",
+          "name": "半自动",
+          "type": "semi",
+          "rpm": 882,
+          "cycleMs": 1000,
+          "burstSize": 3,
+          "gapMs": 200
+        }
+      ]
+    },
+    {
+      "id": "bd2fd07d-78f0-4bdc-972d-1c330152d339",
+      "name": "*雷兹12[惩戒者]",
+      "category": "霰弹枪（MP）",
+      "notes": "",
+      "velocity": 340,
+      "triggerDelayMs": 0,
+      "ranges": [
+        {
+          "until": 2,
+          "damage": 60
+        },
+        {
+          "until": 8,
+          "damage": 50
+        },
+        {
+          "until": 9,
+          "damage": 38
+        },
+        {
+          "until": 25,
+          "damage": 32
+        },
+        {
+          "until": null,
+          "damage": 1
+        }
+      ],
+      "multipliers": {
+        "head": 1,
+        "neck": 0.95,
+        "chest": 0.95,
+        "abdomen": 0.9,
+        "upperArm": 0.9,
+        "forearm": 0.9,
+        "thigh": 0.9,
+        "calf": 0.9
+      },
+      "modes": [
+        {
+          "id": "bee1356d-48c0-4b55-bbca-c82d91e9a6e8",
+          "name": "栓动 / 泵动",
+          "type": "bolt",
+          "rpm": 720,
+          "cycleMs": 733,
+          "burstSize": 3,
+          "gapMs": 200
+        }
+      ]
+    },
+    {
+      "id": "a41b6a26-1ccf-43fb-86f2-d4fec7dfe81c",
+      "name": "*CSG-35[交叉火力]",
+      "category": "冲锋枪（MP）",
+      "notes": "双持，TTK不稳定",
+      "velocity": 540,
+      "triggerDelayMs": 30,
+      "ranges": [
+        {
+          "until": 11,
+          "damage": 14
+        },
+        {
+          "until": 17,
+          "damage": 12
+        },
+        {
+          "until": 23,
+          "damage": 10
+        },
+        {
+          "until": null,
+          "damage": 8
+        }
+      ],
+      "multipliers": {
+        "head": 1,
+        "neck": 1,
+        "chest": 1,
+        "abdomen": 1,
+        "upperArm": 1,
+        "forearm": 1,
+        "thigh": 0.86,
+        "calf": 0.86
+      },
+      "modes": [
+        {
+          "id": "137d7c18-f3d4-40fe-9526-d5f0f40c2d25",
+          "name": "全自动",
+          "type": "auto",
+          "rpm": 1199,
+          "cycleMs": 1000,
+          "burstSize": 3,
+          "gapMs": 200
+        }
+      ]
+    },
+    {
+      "id": "088efe62-109e-4c49-ae6f-ccd7e8cdbc45",
+      "name": "*战将[流明]",
+      "category": "霰弹枪（MP）",
+      "notes": "未完成",
+      "velocity": 325,
+      "triggerDelayMs": 0,
+      "ranges": [
+        {
+          "until": 2,
+          "damage": 45
+        },
+        {
+          "until": 3,
+          "damage": 30
+        },
+        {
+          "until": 5,
+          "damage": 28
+        },
+        {
+          "until": 25,
+          "damage": 20
+        },
+        {
+          "until": null,
+          "damage": 18
+        }
+      ],
+      "multipliers": {
+        "head": 1.2,
+        "neck": 1,
+        "chest": 1,
+        "abdomen": 0.89,
+        "upperArm": 0.89,
+        "forearm": 0.89,
+        "thigh": 0.89,
+        "calf": 0.89
+      },
+      "modes": [
+        {
+          "id": "01b52c97-c680-498e-a929-b4c075d9202d",
+          "name": "点射",
+          "type": "burst",
+          "rpm": 100,
+          "cycleMs": 1000,
+          "burstSize": 2,
+          "gapMs": 200
+        }
+      ]
+    },
+    {
+      "id": "773de2ff-3749-4adc-a814-3770db48c09f",
+      "name": "*WZ55斯崔加[暴怒]",
+      "category": "冲锋枪（MP）",
+      "notes": "",
+      "velocity": 480,
+      "triggerDelayMs": 64,
+      "ranges": [
+        {
+          "until": 11,
+          "damage": 23
+        },
+        {
+          "until": 17,
+          "damage": 20
+        },
+        {
+          "until": 23,
+          "damage": 18
+        },
+        {
+          "until": null,
+          "damage": 15
+        }
+      ],
+      "multipliers": {
+        "head": 1,
+        "neck": 1,
+        "chest": 1,
+        "abdomen": 0.89,
+        "upperArm": 1,
+        "forearm": 1,
+        "thigh": 0.89,
+        "calf": 0.89
+      },
+      "modes": [
+        {
+          "id": "ed7f6ed1-8f45-4ff8-8a66-d4a36f7e45b3",
+          "name": "全自动",
+          "type": "auto",
+          "rpm": 651,
+          "cycleMs": 1000,
+          "burstSize": 3,
+          "gapMs": 200
+        }
+      ]
+    },
+    {
+      "id": "938f99bd-dec8-413d-99bf-7a23bd30a961",
+      "name": "*APOC-338[裁决者]",
+      "category": "轻机枪（MP）",
+      "notes": "",
+      "velocity": 987,
+      "triggerDelayMs": 75,
+      "ranges": [
+        {
+          "until": 35,
+          "damage": 84
+        },
+        {
+          "until": 50,
+          "damage": 69
+        },
+        {
+          "until": null,
+          "damage": 53
+        }
+      ],
+      "multipliers": {
+        "head": 1.19,
+        "neck": 1,
+        "chest": 1,
+        "abdomen": 0.89,
+        "upperArm": 1,
+        "forearm": 1,
+        "thigh": 0.89,
+        "calf": 0.89
+      },
+      "modes": [
+        {
+          "id": "b60f70f8-9bfa-4864-a58c-fac81d88e7bf",
+          "name": "全自动",
+          "type": "auto",
+          "rpm": 311,
+          "cycleMs": 1000,
+          "burstSize": 3,
+          "gapMs": 200
+        }
+      ]
+    },
+    {
+      "id": "8865e31e-88a8-48dc-a594-4c0d14f447fe",
+      "name": "*MAR-9[自动]",
+      "category": "精确射手步枪（MP）",
+      "notes": "",
+      "velocity": 870,
+      "triggerDelayMs": 0,
+      "ranges": [
+        {
+          "until": 34,
+          "damage": 44
+        },
+        {
+          "until": 55,
+          "damage": 38
+        },
+        {
+          "until": null,
+          "damage": 34
+        }
+      ],
+      "multipliers": {
+        "head": 1.18,
+        "neck": 1,
+        "chest": 1,
+        "abdomen": 0.89,
+        "upperArm": 1,
+        "forearm": 1,
+        "thigh": 0.89,
+        "calf": 0.89
+      },
+      "modes": [
+        {
+          "id": "305e5615-cd00-4838-8d11-9543f96dc2ed",
+          "name": "全自动",
+          "type": "auto",
+          "rpm": 606,
+          "cycleMs": 1000,
+          "burstSize": 3,
+          "gapMs": 200
+        }
+      ]
+    },
+    {
+      "id": "ff54a084-d2ab-4e9f-b7b1-ae6c512c938f",
+      "name": "*点57阿塔罗斯[猎侦]",
+      "category": "狙击步枪（MP）",
+      "notes": "",
+      "velocity": 700,
+      "triggerDelayMs": 0,
+      "ranges": [
+        {
+          "until": 89,
+          "damage": 180
+        },
+        {
+          "until": null,
+          "damage": 180
+        }
+      ],
+      "multipliers": {
+        "head": 2,
+        "neck": 1.15,
+        "chest": 1.15,
+        "abdomen": 1.15,
+        "upperArm": 1.15,
+        "forearm": 1.15,
+        "thigh": 1,
+        "calf": 1
+      },
+      "modes": [
+        {
+          "id": "2dc059b8-9700-4c8d-96a6-ec10bd3fd632",
+          "name": "栓动 / 泵动",
+          "type": "bolt",
+          "rpm": 720,
+          "cycleMs": 1633,
+          "burstSize": 3,
+          "gapMs": 200
+        }
+      ]
+    }
+  ]
+}

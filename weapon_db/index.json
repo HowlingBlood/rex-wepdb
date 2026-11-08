@@ -6,11 +6,19 @@
     {
       "id": "mp",
       "label": "多人模式",
-      "description": "多人模式数据库待补充，仍可使用自由试算。",
+      "description": "现代战争武器数据与击杀时间分析。",
       "latest": "latest-mp.json",
-      "currentVersion": null,
-      "available": false,
-      "versions": []
+      "currentVersion": "mpv1",
+      "available": true,
+      "versions": [
+        {
+          "id": "mpv1",
+          "label": "2026-11-08",
+          "effectiveAt": "2026-11-08",
+          "file": "history/mp/mpv1.json",
+          "notes": "Initial Release."
+        }
+      ]
     },
     {
       "id": "wz",
@@ -22,10 +30,10 @@
       "versions": [
         {
           "id": "wz-20261108-r1",
-          "label": "首版登记 · 2026-11-08",
+          "label": "2026-11-08",
           "effectiveAt": "2026-11-08",
           "file": "history/wz/2026-11-08-r1.json",
-          "notes": "现有维护库首次登记，日期不代表游戏补丁生效时间。"
+          "notes": "Initial Release."
         }
       ]
     }
