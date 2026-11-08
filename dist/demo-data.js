@@ -13,7 +13,7 @@ const standardParts = {
 export const DEMO_DATABASE = {
   schemaVersion: 1,
   name: '示例武器库',
-  updatedAt: '2026-11-07T00:00:00.000Z',
+  updatedAt: '2026-11-08T00:00:00.000Z',
   weapons: [
     {
       id: 'demo-ar-01',
@@ -62,7 +62,7 @@ export const DEMO_DATABASE = {
         { until: 45, damage: 33 },
         { until: null, damage: 28 },
       ],
-      multipliers: { ...standardParts, head: 1.5, neck: 1.25, forearm: 1, thigh: 1, calf: 1 },
+      multipliers: { ...standardParts, head: 1.5, neck: 1.3, forearm: 1, thigh: 1, calf: 1 },
       modes: [{ id: 'burst', name: '三连发', type: 'burst', rpm: 900, burstSize: 3, gapMs: 200 }],
     },
     {
@@ -77,7 +77,7 @@ export const DEMO_DATABASE = {
         { until: 75, damage: 90 },
         { until: null, damage: 80 },
       ],
-      multipliers: { head: 2, neck: 1.5, chest: 1.25, abdomen: 1, upperArm: 1, forearm: 0.75, thigh: 0.75, calf: 0.75 },
+      multipliers: { head: 2, neck: 1.5, chest: 1.3, abdomen: 1, upperArm: 1, forearm: 0.8, thigh: 0.8, calf: 0.8 },
       modes: [{ id: 'bolt', name: '栓动', type: 'bolt', cycleMs: 1000 }],
     },
     {
@@ -92,7 +92,7 @@ export const DEMO_DATABASE = {
         { until: 55, damage: 42 },
         { until: null, damage: 36 },
       ],
-      multipliers: { ...standardParts, head: 1.5, neck: 1.25, forearm: 1, thigh: 1, calf: 1 },
+      multipliers: { ...standardParts, head: 1.5, neck: 1.3, forearm: 1, thigh: 1, calf: 1 },
       modes: [{ id: 'semi', name: '半自动', type: 'semi', rpm: 420 }],
     },
   ],

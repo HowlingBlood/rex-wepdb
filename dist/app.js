@@ -1,6 +1,6 @@
-import { BODY_PARTS, validateDatabase, validateWeapon, rangeAt, calculate, inferMultiplier } from './engine.js';
-import { DEMO_DATABASE } from './demo-data.js';
-import { renderBody, renderChart } from './visuals.js';
+import { BODY_PARTS, validateDatabase, validateWeapon, rangeAt, calculate, inferMultiplier, roundHalfUp, deriveDamage, normalizeWeapon, normalizeDatabase } from './engine.js?v=1.1.0';
+import { DEMO_DATABASE } from './demo-data.js?v=1.1.0';
+import { renderBody, renderChart, getSeriesStyle } from './visuals.js?v=1.1.0';
 
 const $ = (s, root = document) => root.querySelector(s);
 const $$ = (s, root = document) => [...root.querySelectorAll(s)];
@@ -9,10 +9,12 @@ const clone = value => structuredClone(value);
 const uid = () => globalThis.crypto?.randomUUID?.() || `w-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 const fmt = (n, digits = 1) => Number.isFinite(n) ? new Intl.NumberFormat('zh-CN', { maximumFractionDigits: digits }).format(n) : n === Infinity ? '∞' : '—';
 const num = v => String(v ?? '').trim() === '' ? NaN : Number(v);
+const roundInput = (value,digits=0) => {try{return roundHalfUp(value,digits);}catch{return value;}};
+const bodyDamage = (base,multiplier) => {try{return deriveDamage(base,multiplier);}catch{return NaN;}};
+const multiplierValue = value => Number.isFinite(value) ? roundInput(value,1).toFixed(1) : '';
 const STORE = 'weapon-atlas.database.v1';
 const DRAFT = 'weapon-atlas.editor.v1';
 const BACKUP = 'weapon-atlas.backup.v1';
-const COLORS = ['#e4bb65','#77b7aa','#a9a1d1','#d7927c','#86a8cc','#b5c67f'];
 const DEFAULT_PROBS = {head:10,neck:5,chest:45,abdomen:20,upperArm:10,forearm:5,thigh:3,calf:2};
 const TYPE_NAMES = {auto:'全自动',semi:'半自动',bolt:'栓动 / 泵动',burst:'点射'};
 let storageAvailable = true, databaseUnsaved = false;
@@ -22,7 +24,7 @@ function writeStore(key, value) {
   catch { storageAvailable = false; toast('浏览器无法保存草稿，请及时导出 JSON。', true); updateStorageStatus(); return false; }
 }
 const stored = readStore(STORE);
-const db = stored && validateDatabase(stored).valid ? stored : clone(DEMO_DATABASE);
+const db = normalizeDatabase(stored && validateDatabase(stored).valid ? stored : DEMO_DATABASE);
 function usableDraft(draft) {
   const w=draft?.weapon;
   return w && typeof w.id==='string' && typeof w.name==='string' && w.multipliers &&
@@ -31,7 +33,7 @@ function usableDraft(draft) {
     Array.isArray(w.modes) && w.modes.length>0 && w.modes.every(m=>m&&typeof m.id==='string'&&typeof m.name==='string'&&['auto','semi','bolt','burst'].includes(m.type));
 }
 const rawDraft = readStore(DRAFT);
-const savedDraft = usableDraft(rawDraft) ? rawDraft : null;
+const savedDraft = usableDraft(rawDraft) ? {...rawDraft,weapon:normalizeWeapon(rawDraft.weapon)} : null;
 const state = {
   db, activeId:db.weapons[0]?.id, compare:new Set(), view:location.hash === '#maintenance' ? 'maintain' : 'analysis',
   health:100, distance:10, chartMax:100, includeTravel:false, part:'chest', mixed:false,
@@ -53,7 +55,7 @@ function updateStorageStatus() {
   const el = $('#storage-status');
   if (el) el.innerHTML = `<i></i> ${storageAvailable&&!databaseUnsaved ? '本地数据就绪' : '请导出备份'}`;
 }
-function persistDatabase() { state.db.updatedAt = new Date().toISOString(); const success=writeStore(STORE, state.db);databaseUnsaved=!success;updateStorageStatus();calculationCache.clear();return success; }
+function persistDatabase() { state.db=normalizeDatabase(state.db);state.db.updatedAt = new Date().toISOString(); const success=writeStore(STORE, state.db);databaseUnsaved=!success;updateStorageStatus();calculationCache.clear();return success; }
 function persistEditor() {
   state.editorDirty = true;
   writeStore(DRAFT, {weapon:state.editor,temporary:state.editorTemporary});
@@ -66,6 +68,15 @@ function partLabel(part) { return BODY_PARTS.find(p => p.id === part)?.label || 
 function rangeLabel(w, i) { return `${i ? fmt(w.ranges[i-1].until) : '0'}–${w.ranges[i].until === null ? '∞' : fmt(w.ranges[i].until)} m`; }
 function isDemo(w) { return !!w?.notes?.includes('示例'); }
 function modeRPM(mode) { return mode.type === 'bolt' ? 60000 / mode.cycleMs : mode.rpm; }
+function updateSelectionButton() {
+  const button=$('#clear-selection');button.disabled=state.compare.size===0;
+  button.textContent=state.compare.size?`取消已选 (${state.compare.size})`:'取消已选';
+  button.setAttribute('aria-label',`取消全部已选武器，当前已选 ${state.compare.size} 把`);
+}
+function clearSelections() {
+  state.compare.clear();$$('[data-compare]',$('#weapon-roster')).forEach(input=>input.checked=false);
+  updateSelectionButton();if(state.view==='analysis')updateAnalysis();toast('已取消全部多选武器。');
+}
 function showDialog({title,body,confirmText='确认',onConfirm,danger=false}) {
   const dialog = $('#app-dialog');
   if (dialog.open) dialog.close();
@@ -87,6 +98,7 @@ function newWeapon() {
     modes:[{id:uid(),name:'全自动',type:'auto',rpm:720,cycleMs:1000,burstSize:3,gapMs:200}]};
 }
 function renderSidebar() {
+  updateSelectionButton();
   $('#weapon-count').textContent = state.db.weapons.length;
   const categorySelect = $('#category-filter');
   categorySelect.innerHTML = `<option value="">全部类别</option>${[...new Set(state.db.weapons.map(w=>w.category).filter(Boolean))].map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('')}`;
@@ -161,21 +173,21 @@ function updateAnalysis() {
     $('#comparison-panel').innerHTML='';
   }
   const currentRange=rangeAt(w,state.distance), base=currentRange.range.damage;
-  const damageValues=Object.fromEntries(BODY_PARTS.map(p=>[p.id,base*w.multipliers[p.id]]));
+  const damageValues=Object.fromEntries(BODY_PARTS.map(p=>[p.id,bodyDamage(base,w.multipliers[p.id])]));
   bodyCleanup=renderBody($('#analysis-body'),{values:state.bodyView==='probability'?Object.fromEntries(BODY_PARTS.map(p=>[p.id,(state.probabilities[p.id]||0)/100])):damageValues,selected:state.part,view:state.bodyView,onSelect:part=>{state.part=part;updateAnalysis();}});
   $('#body-range-caption').textContent=rangeLabel(w,currentRange.index);
-  $('#selected-part').innerHTML=`<div class="selected-part"><div><strong>${esc(partLabel(state.part))}</strong><small>全程倍率 ×${fmt(w.multipliers[state.part],6)} · 当前距离 ${fmt(state.distance)} m</small></div><div class="selected-part-value">${fmt(damageValues[state.part],3)}<small>伤害</small></div></div>`;
+  $('#selected-part').innerHTML=`<div class="selected-part"><div><strong>${esc(partLabel(state.part))}</strong><small>全程倍率 ×${multiplierValue(w.multipliers[state.part])} · 当前距离 ${fmt(state.distance)} m</small></div><div class="selected-part-value">${fmt(damageValues[state.part],0)}<small>伤害</small></div></div>`;
   $('#range-table-caption').textContent=`${partLabel(state.part)} · ${state.health} HP`;
   $('#range-table').innerHTML=`<table class="range-table"><thead><tr><th>距离区间</th><th>基础伤害</th><th>${esc(partLabel(state.part))}伤害</th><th>BTK</th></tr></thead><tbody>${w.ranges.map((range,i)=>{
     let btk='—';try{btk=fmt(calculate(w,{distance:i?w.ranges[i-1].until:0,health:state.health,part:state.part,modeId:activeMode(w).id}).btk);}catch{}
-    return `<tr class="${i===currentRange.index?'current':''}"><td>${i===currentRange.index?'<span class="range-dot"></span>':''}${rangeLabel(w,i)}</td><td>${fmt(range.damage,3)}</td><td>${fmt(range.damage*w.multipliers[state.part],3)}</td><td>${btk} 发</td></tr>`;
+    return `<tr class="${i===currentRange.index?'current':''}"><td>${i===currentRange.index?'<span class="range-dot"></span>':''}${rangeLabel(w,i)}</td><td>${fmt(range.damage,0)}</td><td>${fmt(bodyDamage(range.damage,w.multipliers[state.part]),0)}</td><td>${btk} 发</td></tr>`;
   }).join('')}</tbody></table>`;
   if (!result) return;
   const mode=activeMode(w);
   const stat=(label,english,value,unit,sub,primary=false)=>`<div class="stat-card${primary?' primary':''}"><div class="stat-label">${label}<span class="eyebrow">${english}</span></div><div class="stat-value">${value}<small>${unit}</small></div><div class="stat-sub">${sub}</div></div>`;
   $('#stat-grid').innerHTML=stat(state.mixed?'期望击杀时间':'击杀时间','TIME TO KILL',result.impossible?'无法击杀':fmt(result.ttk),result.impossible?'':'ms',`射击 ${fmt(result.shotMs)} + 扳机 ${fmt(result.triggerMs)} + 飞行 ${fmt(result.travelMs)} ms`,true)
-    +stat(state.mixed?'期望击杀发数':'击杀所需发数','BULLETS TO KILL',fmt(result.btk,3),'发',state.mixed?'概率加权期望，实际发数见分布':`${partLabel(state.part)}连续命中 · ${state.health} HP`)
-    +stat(state.mixed?'平均单发伤害':'部位单发伤害','DAMAGE',fmt(result.damage,3),'',state.mixed?'仅作参考，TTK 按完整概率分布计算':`基础伤害 ${fmt(base,3)} × ${fmt(w.multipliers[state.part],4)}`)
+    +stat(state.mixed?'期望击杀发数':'击杀所需发数','BULLETS TO KILL',fmt(result.displayBtk,0),'发',state.mixed?'向上取整显示；TTK 按完整分布计算':`${partLabel(state.part)}连续命中 · ${state.health} HP`)
+    +stat(state.mixed?'平均单发伤害':'部位单发伤害','DAMAGE',fmt(result.damage,0),'',state.mixed?'仅作参考，TTK 按完整概率分布计算':`基础伤害 ${fmt(base,0)} × ${multiplierValue(w.multipliers[state.part])}`)
     +stat(mode.type==='burst'?'组内射速':'射击速度','FIRE RATE',fmt(modeRPM(mode)),'RPM',mode.type==='bolt'?`完整拉栓周期 ${fmt(mode.cycleMs)} ms`:mode.type==='burst'?`${mode.burstSize} 连发 · 组间 ${fmt(mode.gapMs)} ms`:`枪间隔 ${fmt(60000/mode.rpm)} ms`);
   $('#distribution-caption').textContent=state.mixed?'独立部位命中':'固定部位命中';
   const distribution=result.distribution.filter(d=>d.probability>=1e-7);
@@ -189,7 +201,7 @@ function updateAnalysis() {
       const points=[0,state.chartMax];
       weapon.ranges.forEach(r=>{if(r.until!==null&&r.until>0&&r.until<=state.chartMax){points.push(Math.max(0,r.until-0.000001),r.until);}});
       const unique=[...new Set(points)].sort((a,b)=>a-b);
-      series.push({id:weapon.id,name:weapon.name,color:COLORS[i%COLORS.length],points:unique.map(distance=>{const r=getResult(weapon,distance);return{distance,ttk:r.ttk,btk:r.btk};})});
+      series.push({id:weapon.id,name:weapon.name,...getSeriesStyle(i),points:unique.map(distance=>{const r=getResult(weapon,distance);return{distance,ttk:r.ttk,btk:r.displayBtk};})});
     }catch(e){failures.push(`${weapon.name}：${e.message}`);}
   });
   if (series.some(s=>s.points.some(p=>Number.isFinite(p.ttk)))) chartCleanup=renderChart($('#ttk-chart'),{series,maxDistance:state.chartMax,health:state.health,includeTravel:state.includeTravel,selectedDistance:state.distance,onDistance:setDistance});
@@ -197,7 +209,7 @@ function updateAnalysis() {
   $('#chart-comparison-caption').textContent=failures.length?`部分武器无法计算：${failures.join('；')}`:`${state.mixed?'混合命中':partLabel(state.part)} · ${weapons.length>1?`${weapons.length} 把武器对比`:'单武器分析'}`;
   $('#comparison-panel').innerHTML=weapons.length>1?`<section class="panel compare-table-wrap"><div class="panel-heading"><h2>武器横向对比 <span class="tag outline">${fmt(state.distance)} m · ${state.health} HP</span></h2><button class="text-button compare-clear" data-action="clear-compare">清空对比</button></div><table class="range-table"><thead><tr><th>武器</th><th>射击模式</th><th>${state.mixed?'期望 ':''}TTK</th><th>${state.mixed?'期望 ':''}BTK</th><th>弹速</th></tr></thead><tbody>${weapons.map((weapon,i)=>{
     let r;try{r=getResult(weapon,state.distance);}catch(e){return`<tr><td>${esc(weapon.name)}</td><td colspan="4">${esc(e.message)}</td></tr>`;}
-    return`<tr><td><span class="weapon-key" style="background:${COLORS[i%COLORS.length]}"></span>${esc(weapon.name)}</td><td><select data-compare-mode="${esc(weapon.id)}" aria-label="${esc(weapon.name)}的对比射击模式">${modeOptions(weapon)}</select></td><td class="accent">${fmt(r.ttk)} ms</td><td>${fmt(r.btk,3)} 发</td><td>${fmt(weapon.velocity)} m/s</td></tr>`;
+    return`<tr><td><span class="weapon-key" style="background:${getSeriesStyle(i).color}"></span>${esc(weapon.name)}</td><td><select data-compare-mode="${esc(weapon.id)}" aria-label="${esc(weapon.name)}的对比射击模式">${modeOptions(weapon)}</select></td><td class="accent">${fmt(r.ttk)} ms</td><td>${fmt(r.displayBtk,0)} 发</td><td>${fmt(weapon.velocity)} m/s</td></tr>`;
   }).join('')}</tbody></table></section>`:'';
 }
 function setDistance(d) {
@@ -215,11 +227,11 @@ function renderEditor() {
     <div id="editor-errors">${state.errors.length?`<div class="error-box">${state.errors.map(esc).join('\n')}</div>`:''}</div>
     <form id="weapon-form" novalidate><div class="editor-grid"><div class="editor-column">
       <section class="panel"><div class="panel-heading"><h2><span class="section-index">01</span> 基础信息</h2><span class="eyebrow">IDENTITY</span></div><div class="panel-body form-grid"><label class="field"><span>武器名称</span><input data-field="name" value="${esc(w.name)}" maxlength="100" required></label><label class="field"><span>武器类别</span><input data-field="category" value="${esc(w.category)}" maxlength="60" placeholder="例如：突击步枪"></label><label class="field"><span>子弹速度 <small>m/s</small></span><input data-field="velocity" type="number" min="0.001" step="any" value="${w.velocity}" required></label><label class="field"><span>首发扳机延迟 <small>ms</small></span><input data-field="triggerDelayMs" type="number" min="0" step="any" value="${w.triggerDelayMs}" required></label><label class="field wide"><span>备注 / 数据来源</span><textarea data-field="notes" maxlength="2000" placeholder="记录数据来源、测量说明等">${esc(w.notes)}</textarea></label></div></section>
-      <section class="panel"><div class="panel-heading"><h2><span class="section-index">02</span> 基础伤害与射程</h2><button type="button" class="text-button" data-action="add-range">＋ 添加射程段</button></div><div class="panel-body">${w.ranges.map((r,i)=>`<div class="range-edit-row" data-range-row="${i}"><span class="range-index">${String(i+1).padStart(2,'0')}</span><label class="field"><span>${i===w.ranges.length-1?'最后一段至':'结束距离'} <small>m</small></span><input data-range-until="${i}" ${i===w.ranges.length-1?'value="∞" disabled':`type="number" min="0.001" step="any" value="${r.until}"`}></label><label class="field"><span>基础伤害</span><input data-range-damage="${i}" type="number" min="0.000001" step="any" value="${r.damage}"></label><button type="button" class="icon-button" data-remove-range="${i}" ${w.ranges.length===1?'disabled':''} aria-label="删除第 ${i+1} 个射程段">×</button></div>`).join('')}<p class="range-edit-help">每段从上一段结束距离开始；边界归入下一段，最后一段延伸至无限远。</p></div></section>
+      <section class="panel"><div class="panel-heading"><h2><span class="section-index">02</span> 基础伤害与射程</h2><button type="button" class="text-button" data-action="add-range">＋ 添加射程段</button></div><div class="panel-body">${w.ranges.map((r,i)=>`<div class="range-edit-row" data-range-row="${i}"><span class="range-index">${String(i+1).padStart(2,'0')}</span><label class="field"><span>${i===w.ranges.length-1?'最后一段至':'结束距离'} <small>m</small></span><input data-range-until="${i}" ${i===w.ranges.length-1?'value="∞" disabled':`type="number" min="0.001" step="any" value="${r.until}"`}></label><label class="field"><span>基础伤害</span><input data-range-damage="${i}" type="number" min="1" step="1" value="${r.damage}"></label><button type="button" class="icon-button" data-remove-range="${i}" ${w.ranges.length===1?'disabled':''} aria-label="删除第 ${i+1} 个射程段">×</button></div>`).join('')}<p class="range-edit-help">每段从上一段结束距离开始；边界归入下一段，最后一段延伸至无限远。</p></div></section>
       <section class="panel"><div class="panel-heading"><h2><span class="section-index">03</span> 射击模式</h2><button type="button" class="text-button" data-action="add-mode">＋ 添加模式</button></div><div class="panel-body">${w.modes.map((m,i)=>`<div class="editor-mode" data-mode-row="${i}"><div class="mode-heading"><select data-mode-field="type" data-mode-index="${i}" aria-label="模式 ${i+1} 类型">${Object.entries(TYPE_NAMES).map(([key,name])=>`<option value="${key}" ${m.type===key?'selected':''}>${name}</option>`).join('')}</select><input data-mode-field="name" data-mode-index="${i}" value="${esc(m.name)}" maxlength="60" aria-label="模式 ${i+1} 名称"><button type="button" class="text-button" data-remove-mode="${i}" ${w.modes.length===1?'disabled':''}>移除</button></div><div class="mode-fields">${m.type==='bolt'?`<label class="field"><span>完整拉栓间隔 <small>ms</small></span><input type="number" min="0.001" step="any" data-mode-field="cycleMs" data-mode-index="${i}" value="${m.cycleMs??''}"></label><label class="field"><span>折算射速 <small>RPM</small></span><input value="${fmt(60000/(m.cycleMs??''),3)}" disabled data-bolt-rpm="${i}"></label>`:`<label class="field"><span>${m.type==='burst'?'组内射速':'射速'} <small>RPM</small></span><input type="number" min="0.001" step="any" data-mode-field="rpm" data-mode-index="${i}" value="${m.rpm??''}"></label>${m.type==='burst'?`<label class="field"><span>每组发数</span><input type="number" min="2" max="100" step="1" data-mode-field="burstSize" data-mode-index="${i}" value="${m.burstSize??''}"></label><label class="field"><span>组间间隔 <small>ms</small></span><input type="number" min="0" step="any" data-mode-field="gapMs" data-mode-index="${i}" value="${m.gapMs??200}"></label>`:''}`}</div><p class="inline-note">${m.type==='bolt'?'本枪开火到下一枪可开火的完整间隔，直接决定枪间隔。':m.type==='burst'?'组间间隔：上一组末发射出，到下一组首发射出的完整时间。':m.type==='semi'?'按允许的最快连续扣动扳机节奏计算。':'按固定射速连续射击，首发只计一次扳机延迟。'}</p></div>`).join('')}</div></section>
-    </div><div class="editor-column"><section class="panel"><div class="panel-heading"><h2><span class="section-index">04</span> 全程部位倍率</h2><span class="tag outline">全射程联动</span></div><div class="panel-body"><div class="damage-editor-head"><span>参考射程</span><select id="reference-range" aria-label="伤害换算参考射程">${w.ranges.map((r,i)=>`<option value="${i}" ${i===state.refRange?'selected':''}>${rangeLabel(w,i)} · 基础 ${fmt(r.damage,3)}</option>`).join('')}</select></div><table class="damage-input-table"><thead><tr><th>部位</th><th>全程倍率 ×</th><th>参考段伤害</th></tr></thead><tbody>${BODY_PARTS.map(p=>`<tr data-part-row="${p.id}" class="${state.editorPart===p.id?'selected':''}"><td>${esc(p.label)}</td><td><input data-multiplier="${p.id}" type="number" min="0" step="any" value="${w.multipliers[p.id]}" aria-label="${esc(p.label)}全程倍率"></td><td><input data-actual-damage="${p.id}" type="number" min="0" step="any" value="${Number((w.ranges[state.refRange].damage*w.multipliers[p.id]).toPrecision(12))}" aria-label="${esc(p.label)}参考射程伤害"></td></tr>`).join('')}</tbody></table><p class="multiplier-note">修改任一部位的伤害，会反推该部位的全程倍率，并同步更新所有射程。修改基础伤害时保持倍率不变。</p></div></section>
+    </div><div class="editor-column"><section class="panel"><div class="panel-heading"><h2><span class="section-index">04</span> 全程部位倍率</h2><span class="tag outline">全射程联动</span></div><div class="panel-body"><div class="damage-editor-head"><span>参考射程</span><select id="reference-range" aria-label="伤害换算参考射程">${w.ranges.map((r,i)=>`<option value="${i}" ${i===state.refRange?'selected':''}>${rangeLabel(w,i)} · 基础 ${fmt(r.damage,0)}</option>`).join('')}</select></div><table class="damage-input-table"><thead><tr><th>部位</th><th>全程倍率 ×</th><th>参考段伤害</th></tr></thead><tbody>${BODY_PARTS.map(p=>`<tr data-part-row="${p.id}" class="${state.editorPart===p.id?'selected':''}"><td>${esc(p.label)}</td><td><input data-multiplier="${p.id}" type="number" min="0" step="0.1" value="${multiplierValue(w.multipliers[p.id])}" aria-label="${esc(p.label)}全程倍率"></td><td><input data-actual-damage="${p.id}" type="number" min="0" step="1" value="${bodyDamage(w.ranges[state.refRange].damage,w.multipliers[p.id])}" aria-label="${esc(p.label)}参考射程伤害"></td></tr>`).join('')}</tbody></table><p class="multiplier-note">倍率四舍五入保留 1 位，伤害四舍五入为整数。输入伤害用于反推全程倍率；取整后实际伤害可能与输入值略有不同，所有射程同步更新。</p></div></section>
     <section class="panel editor-preview"><div class="panel-heading"><h2><span class="section-index">05</span> 伤害预览</h2><span class="eyebrow" id="editor-preview-caption"></span></div><div class="body-toolbar"><span>点击人体部位定位输入项</span><span id="editor-selected-part" class="accent"></span></div><div id="editor-body" class="body-diagram"></div></section></div></div>
-    <section class="panel maintenance-table" style="margin-top:18px"><div class="panel-heading"><h2>全射程伤害总览</h2><span class="muted">表格数值作显示舍入，TTK 使用内部数值计算</span></div><div id="editor-damage-overview"></div></section>
+    <section class="panel maintenance-table" style="margin-top:18px"><div class="panel-heading"><h2>全射程伤害总览</h2><span class="muted">倍率保留 1 位，伤害四舍五入为整数后参与计算</span></div><div id="editor-damage-overview"></div></section>
     <div class="editor-actions"><span id="editor-save-state">${state.editorDirty?'有未保存修改 · 已保留本地草稿':'已保存到当前武器库'}</span><div>${readStore(BACKUP)?'<button type="button" class="button ghost compact" data-action="restore-backup">恢复导入前备份</button>':''}<button type="button" class="button ghost" data-action="preview-editor">${state.editorTemporary?'计算这把武器':'保存并查看分析'}</button>${!state.editorTemporary?'<button type="submit" class="button">保存到武器库</button>':''}</div></div></form>`;
   updateEditorPreview();
 }
@@ -227,25 +239,25 @@ function syncEditorFromForm() {
   if(!state.editor||!$('#weapon-form'))return;
   const w=state.editor;
   $$('[data-field]').forEach(el=>{w[el.dataset.field]=['velocity','triggerDelayMs'].includes(el.dataset.field)?num(el.value):el.value;});
-  $$('[data-range-damage]').forEach(el=>w.ranges[Number(el.dataset.rangeDamage)].damage=num(el.value));
+  $$('[data-range-damage]').forEach(el=>w.ranges[Number(el.dataset.rangeDamage)].damage=roundInput(num(el.value)));
   $$('[data-range-until]').forEach(el=>w.ranges[Number(el.dataset.rangeUntil)].until=el.disabled?null:num(el.value));
   $$('[data-mode-field]').forEach(el=>{const key=el.dataset.modeField;w.modes[Number(el.dataset.modeIndex)][key]=['name','type'].includes(key)?el.value:num(el.value);});
-  $$('[data-multiplier]').forEach(el=>w.multipliers[el.dataset.multiplier]=num(el.value));
+  $$('[data-multiplier]').forEach(el=>w.multipliers[el.dataset.multiplier]=roundInput(num(el.value),1));
 }
 function updateEditorPreview() {
   if(!state.editor||!$('#editor-body'))return;
   const w=state.editor,base=w.ranges[state.refRange]?.damage;
   editorBodyCleanup?.();
-  const values=Object.fromEntries(BODY_PARTS.map(p=>[p.id,base*w.multipliers[p.id]]));
+  const values=Object.fromEntries(BODY_PARTS.map(p=>[p.id,bodyDamage(base,w.multipliers[p.id])]));
   editorBodyCleanup=renderBody($('#editor-body'),{values,selected:state.editorPart,view:'damage',onSelect:part=>{state.editorPart=part;$$('[data-part-row]').forEach(row=>row.classList.toggle('selected',row.dataset.partRow===part));updateEditorPreview();const input=$(`[data-multiplier="${part}"]`);input?.focus({preventScroll:true});}});
   $('#editor-preview-caption').textContent=rangeLabel(w,state.refRange);
   $('#editor-selected-part').textContent=partLabel(state.editorPart);
-  $$('[data-actual-damage]').forEach(el=>{if(document.activeElement!==el){const value=values[el.dataset.actualDamage];el.value=Number.isFinite(value)?Number(value.toPrecision(12)):'';}});
-  $$('[data-multiplier]').forEach(el=>{if(document.activeElement!==el)el.value=Number.isFinite(w.multipliers[el.dataset.multiplier])?w.multipliers[el.dataset.multiplier]:'';});
+  $$('[data-actual-damage]').forEach(el=>{if(document.activeElement!==el){const value=values[el.dataset.actualDamage];el.value=Number.isFinite(value)?value:'';}});
+  $$('[data-multiplier]').forEach(el=>{if(document.activeElement!==el)el.value=multiplierValue(w.multipliers[el.dataset.multiplier]);});
   $$('[data-bolt-rpm]').forEach(el=>el.value=fmt(60000/w.modes[Number(el.dataset.boltRpm)].cycleMs,3));
   const reference=$('#reference-range');
-  [...reference.options].forEach((option,i)=>option.textContent=`${rangeLabel(w,i)} · 基础 ${fmt(w.ranges[i].damage,3)}`);
-  $('#editor-damage-overview').innerHTML=`<table class="range-table"><thead><tr><th>距离区间</th><th>基础</th>${BODY_PARTS.map(p=>`<th>${esc(p.label)}</th>`).join('')}</tr></thead><tbody>${w.ranges.map((r,i)=>`<tr class="${i===state.refRange?'current':''}"><td>${rangeLabel(w,i)}</td><td>${fmt(r.damage,3)}</td>${BODY_PARTS.map(p=>`<td>${fmt(r.damage*w.multipliers[p.id],3)}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+  [...reference.options].forEach((option,i)=>option.textContent=`${rangeLabel(w,i)} · 基础 ${fmt(w.ranges[i].damage,0)}`);
+  $('#editor-damage-overview').innerHTML=`<table class="range-table"><thead><tr><th>距离区间</th><th>基础</th>${BODY_PARTS.map(p=>`<th>${esc(p.label)}</th>`).join('')}</tr></thead><tbody>${w.ranges.map((r,i)=>`<tr class="${i===state.refRange?'current':''}"><td>${rangeLabel(w,i)}</td><td>${fmt(r.damage,0)}</td>${BODY_PARTS.map(p=>`<td>${fmt(bodyDamage(r.damage,w.multipliers[p.id]),0)}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
 }
 function validateEditor() {
   syncEditorFromForm();state.errors=validateWeapon(state.editor);
@@ -254,7 +266,7 @@ function validateEditor() {
 }
 function saveEditor(goAnalysis=false) {
   if(!validateEditor())return;
-  const w=clone(state.editor);
+  const w=normalizeWeapon(state.editor);
   if(state.editorTemporary){state.temp=w;state.tempActive=true;clearDraft();state.view='analysis';location.hash='analysis';render();toast('已计算临时武器，未写入数据库。');return;}
   const index=state.db.weapons.findIndex(item=>item.id===w.id);
   if(index>=0)state.db.weapons[index]=w;else state.db.weapons.push(w);
@@ -264,7 +276,7 @@ function saveEditor(goAnalysis=false) {
   if(goAnalysis){state.view='analysis';location.hash='analysis';}
   render();toast('武器数据已保存。');
 }
-function openEditor(w,temporary=false) {state.editor=clone(w);state.editorTemporary=temporary;state.errors=[];state.refRange=0;state.view='maintain';location.hash='maintenance';render();}
+function openEditor(w,temporary=false) {state.editor=normalizeWeapon(w);state.editorTemporary=temporary;state.errors=[];state.refRange=0;state.view='maintain';location.hash='maintenance';render();}
 function createNew(temporary=false) {protectEditor(()=>{openEditor(newWeapon(),temporary);persistEditor();});}
 function exportDatabase(confirmedSavedOnly=false) {
   if(state.editorDirty&&!confirmedSavedOnly){
@@ -272,7 +284,7 @@ function exportDatabase(confirmedSavedOnly=false) {
   }
   const report=validateDatabase(state.db);
   if(!report.valid){showDialog({title:'数据库未通过校验',body:`<ul class="error-list">${report.errors.map(e=>`<li>${esc(e)}</li>`).join('')}</ul>`});return;}
-  const blob=new Blob([JSON.stringify(state.db,null,2)],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+  const blob=new Blob([JSON.stringify(normalizeDatabase(state.db),null,2)],{type:'application/json;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');
   const date=new Intl.DateTimeFormat('sv-SE',{timeZone:'Asia/Shanghai'}).format(new Date());
   a.href=url;a.download=`weapon-atlas-${date}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
   toast(state.editorDirty?'已导出已保存的数据库；未保存草稿不包含在内。':'数据库已导出。');
@@ -286,7 +298,7 @@ async function importFile(file) {
   const duplicate=incoming.weapons.filter(w=>state.db.weapons.some(old=>old.id===w.id)).length;
   showDialog({title:'导入武器数据库',body:`<p><strong>${esc(file.name)}</strong><br>${incoming.weapons.length} 把武器 · ${duplicate} 个 ID 与当前库相同。导入前将保留一份本地备份。</p>${state.editorDirty?'<p class="accent">导入后将清除当前未保存编辑，请先确认这些修改已保存或不再需要。</p>':''}<label class="dialog-choice"><input type="radio" name="import-mode" value="merge" checked><span>合并更新<small>保留现有武器，同 ID 的武器使用文件中的数据。</small></span></label><label class="dialog-choice"><input type="radio" name="import-mode" value="replace"><span>替换整个数据库<small>完整使用导入文件中的武器列表。</small></span></label>`,confirmText:'确认导入',onConfirm:dialog=>{
     const replace=$('[name="import-mode"]:checked',dialog).value==='replace';
-    const next=replace?clone(incoming):{...state.db,weapons:[...state.db.weapons.filter(w=>!incoming.weapons.some(item=>item.id===w.id)),...clone(incoming.weapons)]};
+    const next=normalizeDatabase(replace?incoming:{...state.db,weapons:[...state.db.weapons.filter(w=>!incoming.weapons.some(item=>item.id===w.id)),...incoming.weapons]});
     const valid=validateDatabase(next);if(!valid.valid){toast(valid.errors[0],true);return false;}
     if(!writeStore(BACKUP,state.db)){toast('无法保存导入前备份，已中止导入。请先导出当前库。',true);return false;}
     if(!writeStore(STORE,{...next,updatedAt:new Date().toISOString()})){toast('无法写入数据库，已中止导入；原数据库仍在。',true);return false;}
@@ -294,7 +306,7 @@ async function importFile(file) {
   }});
 }
 function showMethod() {
-  showDialog({title:'计算口径',body:`<p>从扣动扳机开始计时，以达到目标血量的那一发命中时刻为 TTK。</p><ul class="method-list"><li><span class="method-term">伤害</span>：当前射程基础伤害 × 全程部位倍率。边界距离归入下一射程段，默认保留小数参与计算。</li><li><span class="method-term">普通射击</span>：扳机延迟 + (BTK − 1) × 60000 ÷ RPM。半自动按最快允许节奏。</li><li><span class="method-term">栓动 / 泵动</span>：使用完整拉栓周期作为枪间隔，不再叠加 RPM 间隔。</li><li><span class="method-term">点射</span>：按组内射速、每组发数及组间间隔逐发安排时间；组间从末发射出到下一组首发射出。</li><li><span class="method-term">飞行时间</span>：开启时加入 距离 ÷ 弹速 × 1000 ms，假设弹速恒定、目标静止。</li><li><span class="method-term">混合命中</span>：每发独立按部位概率命中，默认不空枪。精确计算击杀发数分布，并按发射时间加权得到期望 TTK；期望发数允许小数。</li><li>未计入换弹、瞄准、反应、网络和服务器延迟。极端复杂的概率数据会给出计算限制提示。</li></ul>`});
+  showDialog({title:'计算口径',body:`<p>从扣动扳机开始计时，以达到目标血量的那一发命中时刻为 TTK。</p><ul class="method-list"><li><span class="method-term">伤害</span>：当前射程基础伤害 × 全程部位倍率。倍率先四舍五入保留 1 位，基础伤害和最终部位伤害四舍五入为整数后计算。边界距离归入下一射程段。</li><li><span class="method-term">普通射击</span>：扳机延迟 + (BTK − 1) × 60000 ÷ RPM。半自动按最快允许节奏。</li><li><span class="method-term">栓动 / 泵动</span>：使用完整拉栓周期作为枪间隔，不再叠加 RPM 间隔。</li><li><span class="method-term">点射</span>：按组内射速、每组发数及组间间隔逐发安排时间；组间从末发射出到下一组首发射出。</li><li><span class="method-term">飞行时间</span>：开启时加入 距离 ÷ 弹速 × 1000 ms，假设弹速恒定、目标静止。</li><li><span class="method-term">混合命中</span>：每发独立按部位概率命中，默认不空枪。精确计算击杀发数分布，并按发射时间加权得到期望 TTK；期望 BTK 向上取整显示；混合 TTK 仍按完整概率分布计算。</li><li>未计入换弹、瞄准、反应、网络和服务器延迟。极端复杂的概率数据会给出计算限制提示。</li></ul>`});
 }
 
 main.addEventListener('submit',e=>{if(e.target.id==='weapon-form'){e.preventDefault();saveEditor();}});
@@ -313,6 +325,17 @@ main.addEventListener('input',e=>{
 });
 main.addEventListener('change',e=>{
   const el=e.target;
+  if(el.dataset.actualDamage||el.dataset.multiplier||el.dataset.rangeDamage!==undefined){
+    const requested=num(el.value);syncEditorFromForm();
+    if(el.dataset.actualDamage){
+      const part=el.dataset.actualDamage,base=state.editor.ranges[state.refRange].damage;
+      try{state.editor.multipliers[part]=inferMultiplier(base,requested);}catch{state.editor.multipliers[part]=NaN;}
+      const actual=bodyDamage(base,state.editor.multipliers[part]);
+      if(Number.isFinite(actual)){el.value=actual;if(Number.isFinite(requested)&&actual!==roundInput(requested))toast(`倍率保留 1 位后，${partLabel(part)}实际伤害为 ${actual}。`);}
+    }else if(el.dataset.multiplier){el.value=multiplierValue(state.editor.multipliers[el.dataset.multiplier]);}
+    else {const value=state.editor.ranges[Number(el.dataset.rangeDamage)].damage;if(Number.isFinite(value))el.value=value;}
+    persistEditor();updateEditorPreview();return;
+  }
   if(el.id==='travel-toggle'){state.includeTravel=el.checked;updateAnalysis();}
   else if(el.id==='mixed-toggle'){state.mixed=el.checked;updateAnalysis();}
   else if(el.dataset.probability){state.probabilities[el.dataset.probability]=num(el.value);updateAnalysis();}
@@ -336,7 +359,7 @@ main.addEventListener('click',e=>{
   if(action==='temp')createNew(true);
   if(action==='edit-current')protectEditor(()=>openEditor(activeWeapon(),state.tempActive));
   if(action==='resume-draft'){state.view='maintain';location.hash='maintenance';render();}
-  if(action==='clear-compare'){state.compare.clear();renderSidebar();updateAnalysis();}
+  if(action==='clear-compare')clearSelections();
   if(action==='add-range'){
     syncEditorFromForm();const ranges=state.editor.ranges,last=ranges.at(-1),previous=ranges.length>1?ranges.at(-2).until:0;
     last.until=(Number.isFinite(previous)?previous:0)+15;ranges.push({until:null,damage:Math.max(1,Math.round(last.damage*.8))});persistEditor();renderEditor();
@@ -353,7 +376,7 @@ main.addEventListener('click',e=>{
   }});
   if(action==='restore-backup'){
     const backup=readStore(BACKUP);if(!backup||!validateDatabase(backup).valid){toast('本地备份无效或已不可用。',true);return;}
-    showDialog({title:'恢复导入前的数据库？',body:`<p>使用备份中的 ${backup.weapons.length} 把武器替换当前库。当前编辑草稿也将清除。</p>`,confirmText:'恢复备份',onConfirm:()=>{const next={...backup,updatedAt:new Date().toISOString()};if(!writeStore(STORE,next)){toast('无法保存数据库，已中止恢复。',true);return false;}state.db=next;state.activeId=backup.weapons[0]?.id;state.editor=null;state.compare.clear();state.tempActive=false;clearDraft();databaseUnsaved=false;calculationCache.clear();updateStorageStatus();render();toast('已恢复导入前的数据库。');}});
+    showDialog({title:'恢复导入前的数据库？',body:`<p>使用备份中的 ${backup.weapons.length} 把武器替换当前库。当前编辑草稿也将清除。</p>`,confirmText:'恢复备份',onConfirm:()=>{const next=normalizeDatabase({...backup,updatedAt:new Date().toISOString()});if(!writeStore(STORE,next)){toast('无法保存数据库，已中止恢复。',true);return false;}state.db=next;state.activeId=backup.weapons[0]?.id;state.editor=null;state.compare.clear();state.tempActive=false;clearDraft();databaseUnsaved=false;calculationCache.clear();updateStorageStatus();render();toast('已恢复导入前的数据库。');}});
   }
 });
 $('#weapon-roster').addEventListener('click',e=>{
@@ -361,7 +384,8 @@ $('#weapon-roster').addEventListener('click',e=>{
   const select=()=>{state.activeId=button.dataset.weapon;state.tempActive=false;if(state.view==='maintain'||!state.editorDirty){state.editor=null;state.editorTemporary=false;state.errors=[];}render();};
   if(state.view==='maintain')protectEditor(select);else select();
 });
-$('#weapon-roster').addEventListener('change',e=>{if(!e.target.dataset.compare)return;const id=e.target.dataset.compare;if(e.target.checked)state.compare.add(id);else state.compare.delete(id);if(state.view==='analysis')updateAnalysis();});
+$('#weapon-roster').addEventListener('change',e=>{if(!e.target.dataset.compare)return;const id=e.target.dataset.compare;if(e.target.checked)state.compare.add(id);else state.compare.delete(id);updateSelectionButton();if(state.view==='analysis')updateAnalysis();});
+$('#clear-selection').onclick=clearSelections;
 $('#weapon-search').addEventListener('input',e=>{state.search=e.target.value;renderSidebar();});
 $('#category-filter').addEventListener('change',e=>{state.category=e.target.value;renderSidebar();});
 $('#new-weapon').onclick=()=>createNew();

@@ -1,6 +1,6 @@
 {
   "name": "weapon-atlas-lab",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
   "description": "通用武器数据维护、人体伤害展示与 TTK 计算工具",

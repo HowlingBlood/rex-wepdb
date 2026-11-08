@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { BODY_PARTS, calculate, inferMultiplier, rangeAt, shotTime, validateDatabase, validateWeapon } from '../dist/engine.js';
+import { BODY_PARTS, calculate, deriveDamage, inferMultiplier, normalizeDatabase, normalizeWeapon, rangeAt, roundHalfUp, shotTime, validateDatabase, validateWeapon } from '../dist/engine.js';
 import { DEMO_DATABASE } from '../dist/demo-data.js';
 
 const close = (actual, expected, tolerance = 1e-8) => assert.ok(Math.abs(actual - expected) <= tolerance, `${actual} ≠ ${expected}`);
@@ -52,23 +52,96 @@ test('a single global multiplier derives body damage at all distances', () => {
   assert.equal(calculate(w, { distance: 30, part: 'head' }).damage, 36);
 });
 
-test('damage inference keeps recurring multiplier precise at BTK boundaries', () => {
+test('damage inference rounds the multiplier to one decimal and calculations use the resulting integer damage', () => {
   const w = weapon();
   w.multipliers.head = inferMultiplier(30, 40);
   const result = calculate(w, { health: 120, part: 'head' });
-  assert.equal(result.damage, 40);
-  assert.equal(result.btk, 3);
+  assert.equal(w.multipliers.head, 1.3);
+  assert.equal(result.damage, 39);
+  assert.equal(result.btk, 4);
   assert.throws(() => inferMultiplier(0, 40), /基础伤害/);
   assert.throws(() => inferMultiplier(30, -1), /部位伤害/);
 });
 
-test('decimal damage is compared as integer ticks, with no false extra bullet', () => {
-  const w = weapon({ ranges: [{ until: null, damage: 0.1 }] });
-  w.multipliers.chest = 3;
-  assert.equal(calculate(w, { health: 0.9 }).btk, 3);
-  w.ranges[0].damage = 33.3333333333;
-  w.multipliers.chest = 1;
-  assert.equal(calculate(w, { health: 100 }).btk, 4);
+test('base damage, multiplier and final damage each use their prescribed rounding before BTK', () => {
+  const w = weapon({ ranges: [{ until: null, damage: 10.5 }] });
+  w.multipliers.chest = 1.25;
+  const result = calculate(w, { health: 42 });
+  assert.equal(result.baseDamage, 11);
+  assert.equal(result.damage, 14);
+  assert.equal(result.btk, 3);
+  assert.equal(result.ttk, 220);
+  assert.equal(w.ranges[0].damage, 10.5);
+  assert.equal(w.multipliers.chest, 1.25);
+});
+
+test('decimal half-up rounding is stable at binary floating-point half boundaries', () => {
+  assert.equal(roundHalfUp(1.15, 1), 1.2);
+  assert.equal(roundHalfUp(1.25, 1), 1.3);
+  assert.equal(roundHalfUp(0.75, 1), 0.8);
+  assert.equal(roundHalfUp(0.05, 1), 0.1);
+  assert.equal(roundHalfUp(1.149999, 1), 1.1);
+  assert.equal(roundHalfUp(24.5), 25);
+  assert.equal(roundHalfUp(24.499999), 24);
+  assert.equal(roundHalfUp(1e-7, 1), 0);
+  assert.equal(deriveDamage(45, 0.7), 32);
+  assert.equal(deriveDamage(15, 1.1), 17);
+  assert.equal(deriveDamage(10, 0), 0);
+  assert.throws(() => roundHalfUp(-0.01), /非负/);
+  assert.throws(() => roundHalfUp(Infinity), /有限/);
+});
+
+test('inference first rounds both damage inputs and rounds the ratio to one decimal', () => {
+  assert.equal(inferMultiplier(20, 23), 1.2);
+  assert.equal(inferMultiplier(10.49, 14.49), 1.4);
+  assert.equal(inferMultiplier(10.5, 14.5), 1.4);
+  assert.equal(inferMultiplier(30, 0.49), 0);
+});
+
+test('positive damage that rounds to zero is rejected with an explicit validation error', () => {
+  const w = weapon({ ranges: [{ until: null, damage: 0.49 }] });
+  assert.match(validateWeapon(w).join(' '), /四舍五入后为 0/);
+  assert.match(validateWeapon(normalizeWeapon(w)).join(' '), /四舍五入后至少为 1/);
+  assert.throws(() => calculate(w), /四舍五入后至少为 1/);
+  assert.throws(() => inferMultiplier(0.49, 1), /四舍五入后为 0/);
+  assert.throws(() => deriveDamage(0.49, 1), /四舍五入后为 0/);
+  assert.equal(calculate(weapon({ ranges: [{ until: null, damage: 0.5 }] })).baseDamage, 1);
+});
+
+test('legacy decimal databases normalise by cloning while preserving metadata and timing', () => {
+  const source = database();
+  source.customMetadata = { ownerNote: 'keep' };
+  source.weapons[0].ranges[0].damage = 30.49;
+  source.weapons[0].ranges[1].damage = 24.5;
+  source.weapons[0].multipliers.head = 1.25;
+  source.weapons[0].multipliers.neck = 1.15;
+  source.weapons[0].modes[0].rpm = 601.25;
+  const original = structuredClone(source);
+  const normalised = normalizeDatabase(source);
+  assert.deepEqual(source, original);
+  assert.notEqual(normalised, source);
+  assert.notEqual(normalised.weapons[0], source.weapons[0]);
+  assert.equal(normalised.weapons[0].ranges[0].damage, 30);
+  assert.equal(normalised.weapons[0].ranges[1].damage, 25);
+  assert.equal(normalised.weapons[0].multipliers.head, 1.3);
+  assert.equal(normalised.weapons[0].multipliers.neck, 1.2);
+  assert.equal(normalised.weapons[0].modes[0].rpm, 601.25);
+  assert.equal(normalised.weapons[0].ranges[0].until, source.weapons[0].ranges[0].until);
+  assert.deepEqual(normalised.customMetadata, source.customMetadata);
+  assert.equal(validateDatabase(normalised).valid, true);
+  assert.deepEqual(normalizeDatabase(normalised), normalised);
+});
+
+test('normalisation preserves malformed values for validation rather than hiding them', () => {
+  const source = weapon();
+  source.ranges[0].damage = '30.5';
+  source.multipliers.head = -0.01;
+  source.multipliers.neck = NaN;
+  const normalised = normalizeWeapon(source);
+  assert.equal(normalised.ranges[0].damage, '30.5');
+  assert.equal(normalised.multipliers.head, -0.01);
+  assert.ok(Number.isNaN(normalised.multipliers.neck));
+  assert.ok(validateWeapon(normalised).length >= 3);
 });
 
 test('bolt/pump uses its full cycle and does not add the nominal RPM interval', () => {
@@ -92,6 +165,7 @@ test('mixed expected BTK differs from BTK calculated using average damage', () =
   w.multipliers.head = 2;
   const result = calculate(w, { probabilities: { head: 50, chest: 50 } });
   assert.equal(result.btk, 1.5);
+  assert.equal(result.displayBtk, 2);
   assert.equal(result.ttk, 70);
   assert.equal(result.damage, 75);
   assert.deepEqual(result.distribution.map(({ shots, probability }) => ({ shots, probability })), [{ shots: 1, probability: 0.5 }, { shots: 2, probability: 0.5 }]);
@@ -102,6 +176,7 @@ test('mixed burst TTK weights actual shot times across the burst boundary', () =
   w.multipliers.head = 2;
   const result = calculate(w, { probabilities: { head: 50, chest: 50 } });
   close(result.btk, 2.875);
+  assert.equal(result.displayBtk, 3);
   close(result.ttk, 232.5);
   close(result.distribution.reduce((sum, item) => sum + item.probability * item.ttk, 0), result.ttk);
   assert.notEqual(result.ttk, (result.btk - 1) * 100 + 20);
@@ -117,7 +192,20 @@ test('same-damage parts collapse without changing expected result', () => {
   const result = calculate(weapon(), { probabilities: { chest: 20, abdomen: 30, upperArm: 50 } });
   assert.equal(result.btk, 4);
   assert.equal(result.ttk, 320);
+  assert.equal(result.displayBtk, 4);
   assert.equal(result.distributionTailProbability, 0);
+});
+
+test('integer expected BTK does not gain a bullet from probability-summation noise', () => {
+  const w = weapon({ ranges: [{ until: null, damage: 1 }] });
+  w.multipliers = Object.fromEntries(BODY_PARTS.map(part => [part.id, 1]));
+  const result = calculate(w, { health: 300, probabilities: { head: 386, neck: 569, chest: 752, abdomen: 935, upperArm: 121, forearm: 304, thigh: 487, calf: 670 } });
+  assert.equal(result.btk, 300);
+  assert.equal(result.displayBtk, 300);
+  w.multipliers.head = 0;
+  const geometric = calculate(w, { health: 300, probabilities: { head: 6, chest: 1 } });
+  assert.equal(geometric.btk, 2100);
+  assert.equal(geometric.displayBtk, 2100);
 });
 
 test('several distinct positive outcomes do not invent zero-damage probability through summation noise', () => {
@@ -134,6 +222,7 @@ test('zero-damage fixed part and all-zero mixture are explicitly impossible', ()
   const fixed = calculate(w, { part: 'head' });
   assert.equal(fixed.ttk, Infinity);
   assert.equal(fixed.impossible, true);
+  assert.equal(fixed.displayBtk, Infinity);
   const mixed = calculate(w, { probabilities: { head: 100 } });
   assert.equal(mixed.btk, Infinity);
   assert.equal(mixed.impossible, true);
@@ -227,10 +316,11 @@ test('results are independent of mutation of a previously returned distribution'
 });
 
 test('every demo weapon, firing mode, range and target has consistent fixed and mixed results', () => {
-  assert.equal(validateDatabase(DEMO_DATABASE).valid, true);
+  const demo = normalizeDatabase(DEMO_DATABASE);
+  assert.equal(validateDatabase(demo).valid, true);
   const probabilities = { head: 10, neck: 5, chest: 45, abdomen: 20, upperArm: 10, forearm: 5, thigh: 3, calf: 2 };
   let calculations = 0;
-  for (const w of DEMO_DATABASE.weapons) for (const mode of w.modes) for (let rangeIndex = 0; rangeIndex < w.ranges.length; rangeIndex++) for (const health of [100, 150, 300]) {
+  for (const w of demo.weapons) for (const mode of w.modes) for (let rangeIndex = 0; rangeIndex < w.ranges.length; rangeIndex++) for (const health of [100, 150, 300]) {
     const distance = rangeIndex ? w.ranges[rangeIndex - 1].until : 0;
     const options = { distance, health, modeId: mode.id, includeTravel: true };
     for (const part of BODY_PARTS) {
@@ -241,6 +331,8 @@ test('every demo weapon, firing mode, range and target has consistent fixed and 
       assert.equal(result.distribution.length, 1);
       assert.equal(result.distribution[0].probability, 1);
       assert.equal(result.distribution[0].ttk, result.ttk);
+      assert.ok(Number.isInteger(result.damage));
+      assert.equal(result.displayBtk, result.btk);
       calculations++;
     }
     const mixed = calculate(w, { ...options, probabilities });
@@ -251,6 +343,9 @@ test('every demo weapon, firing mode, range and target has consistent fixed and 
     close(mixed.distribution.reduce((sum, entry) => sum + entry.probability, 0), 1);
     close(mixed.distribution.reduce((sum, entry) => sum + entry.shots * entry.probability, 0), mixed.btk);
     close(mixed.distribution.reduce((sum, entry) => sum + entry.ttk * entry.probability, 0), mixed.ttk, 1e-6);
+    const nearest = Math.round(mixed.btk);
+    const expectedDisplayBtk = Math.abs(mixed.btk - nearest) < 1e-12 ? nearest : Math.ceil(mixed.btk);
+    assert.equal(mixed.displayBtk, expectedDisplayBtk);
     calculations++;
   }
   assert.ok(calculations > 0);

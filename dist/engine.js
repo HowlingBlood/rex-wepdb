@@ -1,8 +1,10 @@
 /**
  * Weapon Lab calculation model. Times are milliseconds; distances metres.
  * Each range stores base damage, while body multipliers apply at every range.
- * Number inputs retain 12 significant damage digits. This removes arithmetic
- * noise (30 * (40 / 30), for example), without using rounded display values.
+ * Base damage and final body damage are rounded to integers. Global body
+ * multipliers are rounded to one decimal. These canonical values drive all
+ * calculations, not merely their display. Decimal half-up rounding uses exact
+ * integer arithmetic, avoiding binary floating-point half-boundary errors.
  */
 export const BODY_PARTS = Object.freeze([
   { id: 'head', label: '头部' },
@@ -30,8 +32,70 @@ const finite = value => typeof value === 'number' && Number.isFinite(value);
 const positive = value => finite(value) && value > 0;
 const nonnegative = value => finite(value) && value >= 0;
 const text = value => typeof value === 'string' && value.trim().length > 0;
-const cleanDamage = value => Number(value.toPrecision(12));
 const fail = message => { throw new Error(message); };
+
+/** Round a nonnegative finite decimal Number with ties going upward. */
+export function roundHalfUp(value, digits = 0) {
+  if (!nonnegative(value)) fail('四舍五入的数值必须是非负有限数值。');
+  if (!Number.isInteger(digits) || digits < 0 || digits > 12) fail('四舍五入的小数位数必须是 0–12 的整数。');
+  const parts = decimalParts(value);
+  if (parts.decimals <= digits) return value;
+  const divisor = 10n ** BigInt(parts.decimals - digits);
+  const rounded = (parts.digits + divisor / 2n) / divisor;
+  return Number(`${rounded}e-${digits}`);
+}
+
+function roundedBaseDamage(value) {
+  if (!positive(value)) fail('基础伤害必须是大于 0 的有限数值。');
+  const rounded = roundHalfUp(value);
+  if (rounded === 0) fail('基础伤害四舍五入后为 0；请填写四舍五入后至少为 1 的基础伤害。');
+  return rounded;
+}
+
+/** Derive the actual integer damage used by fixed and mixed calculations. */
+export function deriveDamage(baseDamage, multiplier) {
+  const base = roundedBaseDamage(baseDamage);
+  if (!nonnegative(multiplier)) fail('部位倍率必须是非负有限数值。');
+  const canonicalMultiplier = roundHalfUp(multiplier, 1);
+  const baseTicks = decimalParts(base).digits;
+  const multiplierParts = decimalParts(canonicalMultiplier);
+  const multiplierTicks = multiplierParts.digits * 10n ** BigInt(1 - multiplierParts.decimals);
+  const result = Number((baseTicks * multiplierTicks + 5n) / 10n);
+  if (!nonnegative(result)) fail('部位伤害超出可计算范围。');
+  return result;
+}
+
+function normalizeDamageFields(weapon) {
+  if (!record(weapon)) return weapon;
+  if (Array.isArray(weapon.ranges)) for (const range of weapon.ranges) {
+    if (record(range) && nonnegative(range.damage)) range.damage = roundHalfUp(range.damage);
+  }
+  if (record(weapon.multipliers)) for (const part of PART_IDS) {
+    if (nonnegative(weapon.multipliers[part])) weapon.multipliers[part] = roundHalfUp(weapon.multipliers[part], 1);
+  }
+  return weapon;
+}
+
+/** Clone and canonicalise damage inputs; malformed values remain for validation. */
+export function normalizeWeapon(weapon) {
+  return normalizeDamageFields(structuredClone(weapon));
+}
+
+/** Preserve schema/metadata and the source object while normalising old decimals. */
+export function normalizeDatabase(database) {
+  const result = structuredClone(database);
+  if (record(result) && Array.isArray(result.weapons)) result.weapons.forEach(normalizeDamageFields);
+  return result;
+}
+
+function btkForDisplay(value) {
+  if (!Number.isFinite(value)) return value;
+  // Only remove numerical noise near an integer. Never round the expectation
+  // used to compute TTK, including when a mixture crosses a burst boundary.
+  const nearest = Math.round(value);
+  const tolerance = 32 * Number.EPSILON * Math.max(1, Math.abs(value));
+  return Math.ceil(Math.abs(value - nearest) <= tolerance ? nearest : value);
+}
 
 export function validateWeapon(weapon) {
   const errors = [];
@@ -50,7 +114,8 @@ export function validateWeapon(weapon) {
     weapon.ranges.forEach((range, index) => {
       const prefix = `第 ${index + 1} 个射程段：`;
       if (!record(range)) { errors.push(`${prefix}必须是一个对象。`); return; }
-      if (!positive(range.damage)) errors.push(`${prefix}基础伤害必须大于 0。`);
+      if (!positive(range.damage)) errors.push(`${prefix}基础伤害必须是正数，且四舍五入后至少为 1。`);
+      else if (roundHalfUp(range.damage) === 0) errors.push(`${prefix}基础伤害四舍五入后为 0，必须至少为 1。`);
       if (index === weapon.ranges.length - 1) {
         if (range.until !== null) errors.push(`${prefix}最后一段的终点必须为 null，表示无限远。`);
       } else if (!positive(range.until) || range.until <= previous) {
@@ -63,7 +128,10 @@ export function validateWeapon(weapon) {
   else for (const part of BODY_PARTS) {
     if (!nonnegative(weapon.multipliers[part.id])) errors.push(`${part.label}倍率必须是非负有限数值。`);
     else if (Array.isArray(weapon.ranges)) weapon.ranges.forEach((range, index) => {
-      if (positive(range?.damage) && !Number.isFinite(range.damage * weapon.multipliers[part.id])) errors.push(`第 ${index + 1} 个射程段的${part.label}伤害超出可计算范围。`);
+      if (positive(range?.damage) && roundHalfUp(range.damage) > 0) {
+        try { deriveDamage(range.damage, weapon.multipliers[part.id]); }
+        catch { errors.push(`第 ${index + 1} 个射程段的${part.label}伤害超出可计算范围。`); }
+      }
     });
   }
 
@@ -112,9 +180,13 @@ export function validateDatabase(database) {
 }
 
 export function inferMultiplier(baseDamage, bodyDamage) {
-  if (!positive(baseDamage)) fail('反推倍率时，基础伤害必须大于 0。');
+  const base = roundedBaseDamage(baseDamage);
   if (!nonnegative(bodyDamage)) fail('部位伤害必须是非负有限数值。');
-  const result = bodyDamage / baseDamage;
+  const body = roundHalfUp(bodyDamage);
+  const baseTicks = decimalParts(base).digits;
+  const bodyTicks = decimalParts(body).digits;
+  const tenths = (bodyTicks * 20n + baseTicks) / (baseTicks * 2n);
+  const result = Number(`${tenths}e-1`);
   if (!Number.isFinite(result)) fail('推算倍率超出可计算范围。');
   return result;
 }
@@ -193,10 +265,13 @@ function probabilityOutcomes(weapon, baseDamage, probabilities) {
   for (const part of PART_IDS) {
     const weight = probabilities[part] ?? 0;
     if (weight === 0) continue;
-    const damage = cleanDamage(baseDamage * weapon.multipliers[part]);
-    if (!nonnegative(damage)) fail('部位伤害超出可计算范围。');
+    const damage = deriveDamage(baseDamage, weapon.multipliers[part]);
     aggregated.set(damage, (aggregated.get(damage) ?? 0) + weight / sum);
   }
+  // When every selected body part has the same damage, its total probability
+  // is exactly one. Summing independently divided weights must not introduce
+  // a tiny excess which accumulates across many shots.
+  if (aggregated.size === 1) return [{ damage: aggregated.keys().next().value, probability: 1 }];
   return [...aggregated].map(([damage, probability]) => ({ damage, probability })).sort((a, b) => a.damage - b.damage);
 }
 
@@ -291,8 +366,10 @@ function mixedStatistics(health, outcomes, mode, limits) {
   }
 
   const startIndex = stateIndex.get(healthTicks);
-  const btk = expectedShots[startIndex];
-  const shotMs = expectedTimes[startIndex][0];
+  const btk = positiveOutcomes.length === 1
+    ? requiredShots(health, positiveOutcomes[0].damage) / positiveProbability
+    : expectedShots[startIndex];
+  const shotMs = phases === 1 ? (btk - 1) * intervals[0] : expectedTimes[startIndex][0];
   if (!positive(btk) || !nonnegative(shotMs)) fail('混合命中期望超出可计算范围；请检查概率和伤害。');
 
   const distribution = [];
@@ -340,26 +417,26 @@ export function calculate(weapon, options = {}) {
     probabilities = null,
     limits: limitOverrides,
   } = options;
+  weapon = normalizeWeapon(weapon);
   const errors = validateWeapon(weapon);
   if (errors.length) fail(errors[0]);
   if (!positive(health)) fail('目标血量必须是大于 0 的有限数值。');
   if (!PART_IDS.includes(part)) fail('未知的命中部位。');
   const { index: rangeIndex, range } = rangeAt(weapon, distance);
-  const baseDamage = cleanDamage(range.damage);
+  const baseDamage = roundedBaseDamage(range.damage);
   const mode = resolveMode(weapon, modeId);
   const triggerMs = weapon.triggerDelayMs;
   const travelMs = includeTravel ? distance / weapon.velocity * 1000 : 0;
   if (!nonnegative(travelMs)) fail('子弹飞行时间超出可计算范围。');
 
   if (probabilities === null) {
-    const damage = cleanDamage(baseDamage * weapon.multipliers[part]);
-    if (!nonnegative(damage)) fail('部位伤害超出可计算范围。');
+    const damage = deriveDamage(baseDamage, weapon.multipliers[part]);
     const btk = requiredShots(health, damage);
     const impossible = !Number.isFinite(btk);
     const shotMs = impossible ? Infinity : shotTime(weapon, mode, btk) - triggerMs;
     const ttk = shotMs + triggerMs + travelMs;
     return {
-      btk, ttk, damage, baseDamage, rangeIndex, shotMs, triggerMs, travelMs,
+      btk, displayBtk: btkForDisplay(btk), ttk, damage, baseDamage, rangeIndex, shotMs, triggerMs, travelMs,
       distribution: impossible ? [] : [{ shots: btk, probability: 1, ttk }],
       mixed: false, impossible,
       distributionTailProbability: impossible ? 1 : 0,
@@ -369,10 +446,11 @@ export function calculate(weapon, options = {}) {
 
   const outcomes = probabilityOutcomes(weapon, baseDamage, probabilities);
   const limits = getLimits(limitOverrides);
-  const result = mixedStatistics(cleanDamage(health), outcomes, mode, limits);
+  const result = mixedStatistics(health, outcomes, mode, limits);
   const damage = outcomes.reduce((sum, item) => sum + item.damage * item.probability, 0);
   return {
     btk: result.btk,
+    displayBtk: btkForDisplay(result.btk),
     ttk: result.shotMs + triggerMs + travelMs,
     damage, baseDamage, rangeIndex,
     shotMs: result.shotMs, triggerMs, travelMs,

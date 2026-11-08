@@ -7,8 +7,8 @@
   <meta name="description" content="维护通用武器数据，通过人体部位伤害、距离曲线与概率分布分析 BTK 和 TTK。">
   <title>WEAPON ATLAS · 武器数据工坊</title>
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./styles.css">
-  <link rel="stylesheet" href="./visuals.css">
+  <link rel="stylesheet" href="./styles.css?v=1.1.0">
+  <link rel="stylesheet" href="./visuals.css?v=1.1.0">
 </head>
 <body>
   <header class="app-header">
@@ -21,7 +21,7 @@
       <div class="sidebar-heading"><span>武器库 <span id="weapon-count" class="count"></span></span><span class="eyebrow">ARMORY</span></div>
       <label class="search-box"><span aria-hidden="true">⌕</span><input id="weapon-search" type="search" placeholder="搜索武器名称" aria-label="搜索武器"></label>
       <select id="category-filter" aria-label="筛选武器类别"><option value="">全部类别</option></select>
-      <div class="roster-help"><span>选择武器查看数据</span><span>勾选对比 ↓</span></div>
+      <div class="roster-help"><span>勾选加入对比 ↓</span><button id="clear-selection" class="text-button" type="button" disabled>取消已选</button></div>
       <div id="weapon-roster" class="weapon-roster"></div>
       <div class="sidebar-bottom"><button id="new-weapon" class="button full">＋ 新建武器</button><button id="temporary-weapon" class="button ghost full">自由试算 <span>↗</span></button><div class="sidebar-note"><span class="tiny-cross">＋</span><p>以数据理解每一次命中<small>JSON DATABASE · LOCAL FIRST</small></p></div></div>
     </aside>
@@ -32,6 +32,6 @@
   <dialog id="app-dialog" class="app-dialog"></dialog>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
   <noscript>请启用 JavaScript 使用武器数据工坊。</noscript>
-  <script type="module" src="./app.js"></script>
+  <script type="module" src="./app.js?v=1.1.0"></script>
 </body>
 </html>

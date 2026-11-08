@@ -4,7 +4,18 @@ const PARTS = [
   ['upperArm', '上臂'], ['forearm', '前臂'], ['thigh', '大腿'], ['calf', '小腿'],
 ];
 const LABELS = Object.fromEntries(PARTS);
-const COLORS = ['#e4bb65', '#77b7aa', '#d79883', '#8faed1', '#b3bd84', '#b69fca'];
+export const SERIES_COLORS = Object.freeze(['#ffd166', '#42c7ff', '#ff6ec7', '#ff9b45', '#59e39b', '#ac8cff']);
+const SERIES_DASHES = ['', '10 5', '3 5', '12 4 3 4', '2 4 8 4'];
+
+/** Color plus line pattern stays unique for 30 curves; later batches gain new patterns. */
+export function getSeriesStyle(index = 0) {
+  const position = finite(index) ? Math.max(0, Math.floor(index)) : 0;
+  const batch = Math.floor(position / (SERIES_COLORS.length * SERIES_DASHES.length));
+  return {
+    color: SERIES_COLORS[position % SERIES_COLORS.length],
+    dash: batch ? `${10 + batch * 3} ${3 + position % SERIES_DASHES.length} 2 3` : SERIES_DASHES[position % SERIES_DASHES.length],
+  };
+}
 let instance = 0;
 
 const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (character) => ({
@@ -14,7 +25,8 @@ const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 const finite = (value) => typeof value === 'number' && Number.isFinite(value);
 const number = (value, digits = 1) => finite(value)
   ? new Intl.NumberFormat('zh-CN', { maximumFractionDigits: digits }).format(value) : '—';
-const safeColor = (color, index) => /^(?:#[\da-f]{3}|#[\da-f]{4}|#[\da-f]{6}|#[\da-f]{8})$/i.test(color || '') ? color : COLORS[index % COLORS.length];
+const safeColor = (color, index) => /^(?:#[\da-f]{3}|#[\da-f]{4}|#[\da-f]{6}|#[\da-f]{8})$/i.test(color || '') ? color : getSeriesStyle(index).color;
+const safeDash = (dash, index) => typeof dash === 'string' && dash.length < 120 && /^[\d.,\s]*$/.test(dash) ? dash : getSeriesStyle(index).dash;
 
 function restoreFocus(container, selector, hadFocus) {
   if (!hadFocus || document.activeElement !== document.body) return;
@@ -52,7 +64,7 @@ export function renderBody(container, { values = {}, selected = 'chest', view = 
   const max = Math.max(1, ...Object.values(values).filter(finite));
   const zones = PARTS.map(([id, label], index) => {
     const value = values[id];
-    const display = finite(value) ? `${number(probability ? value * 100 : value, probability ? 1 : 2)}${probability ? '%' : suffix}` : '—';
+    const display = finite(value) ? `${number(probability ? value * 100 : value, probability ? 1 : 0)}${probability ? '%' : suffix}` : '—';
     const opacity = probability ? 0.13 + clamp(finite(value) ? value : 0, 0, 1) * 0.66
       : 0.16 + clamp(finite(value) ? value / max : 0, 0, 1) * 0.20;
     const annotation = ANNOTATIONS[id];
@@ -141,7 +153,7 @@ export function renderChart(container, { series = [], maxDistance = 100, health 
       else if (segment.length) { segments.push(segment); segment = []; }
     });
     if (segment.length) segments.push(segment);
-    return { ...item, color: safeColor(item.color, index), allPoints, segments, points: allPoints.filter((point) => finite(point.ttk)) };
+    return { ...item, color: safeColor(item.color, index), dash: safeDash(item.dash, index), allPoints, segments, points: allPoints.filter((point) => finite(point.ttk)) };
   }).filter((item) => item.points.length);
   if (!prepared.length) {
     container.innerHTML = '<div class="ttk-chart-empty"><span class="ttk-empty-mark">⌁</span><strong>暂无可绘制的曲线</strong><span>选择武器或填写有效数据后，查看距离与击杀时间。</span></div>';
@@ -157,21 +169,23 @@ export function renderChart(container, { series = [], maxDistance = 100, health 
   const maximumTtk = Math.ceil(rawMaximum * 1.08 / step) * step;
   const x = (distance) => dimensions.left + distance / maximumDistance * plotWidth;
   const y = (ttk) => dimensions.top + (1 - ttk / maximumTtk) * plotHeight;
+  const tagWidth = Math.max(70, number(maximumDistance, 1).length * 8 + 24);
+  const tagX = (distance) => clamp(x(distance), dimensions.left + tagWidth / 2, dimensions.width - dimensions.right - tagWidth / 2);
   const yTicks = [];
   for (let value = 0; value <= maximumTtk + step / 10; value += step) yTicks.push(value);
   const grids = yTicks.map((value) => `<g><line x1="${dimensions.left}" x2="${dimensions.width - dimensions.right}" y1="${y(value)}" y2="${y(value)}" class="ttk-grid-line"/><text x="${dimensions.left - 13}" y="${y(value) + 4}" text-anchor="end" class="ttk-axis-text">${number(value, 0)}</text></g>`).join('');
   const xTicks = Array.from({ length: 6 }, (_, index) => maximumDistance * index / 5).map((value) => `<g><line x1="${x(value)}" x2="${x(value)}" y1="${dimensions.top}" y2="${dimensions.height - dimensions.bottom}" class="ttk-grid-line ttk-grid-vertical"/><text x="${x(value)}" y="${dimensions.height - 20}" text-anchor="middle" class="ttk-axis-text">${number(value, 1)}</text></g>`).join('');
-  const paths = prepared.map((item, index) => item.segments.map((segment) => `<path d="${segment.map((point, pointIndex) => `${pointIndex ? 'L' : 'M'}${x(point.distance).toFixed(3)},${y(point.ttk).toFixed(3)}`).join(' ')}" fill="none" stroke="${item.color}" stroke-width="${index ? 2 : 2.8}" stroke-linejoin="round" stroke-linecap="round" class="ttk-series-path"/>`).join('')).join('');
+  const paths = prepared.map((item, index) => `<g class="ttk-series" data-series-path="${index}">${item.segments.map((segment) => `<path d="${segment.map((point, pointIndex) => `${pointIndex ? 'L' : 'M'}${x(point.distance).toFixed(3)},${y(point.ttk).toFixed(3)}`).join(' ')}" fill="none" stroke="${item.color}" stroke-dasharray="${item.dash}" stroke-width="${index ? 2.5 : 3}" stroke-linejoin="round" stroke-linecap="round" class="ttk-series-path"/>`).join('')}</g>`).join('');
   container.innerHTML = `<div class="ttk-chart">
-    <div class="ttk-chart-top"><div class="ttk-legend">${prepared.map((item) => `<span class="ttk-legend-item"><i style="background:${item.color}"></i><span title="${escapeHtml(item.name)}">${escapeHtml(item.name)}</span></span>`).join('')}</div><span class="ttk-chart-context">${number(health, 0)} HP · ${includeTravel ? '含弹速' : '纯射击 + 扳机延迟'}</span></div>
+    <div class="ttk-chart-top"><div class="ttk-legend" aria-label="武器曲线图例，点击突出显示">${prepared.map((item, index) => `<button type="button" class="ttk-legend-item" data-series-legend="${index}" aria-pressed="false" title="突出显示 ${escapeHtml(item.name)}"><svg viewBox="0 0 38 12" aria-hidden="true"><line x1="1" x2="37" y1="6" y2="6" stroke="${item.color}" stroke-width="3" stroke-dasharray="${item.dash}"/></svg><span>${escapeHtml(item.name)}</span></button>`).join('')}</div><span class="ttk-chart-context">${number(health, 0)} HP · ${includeTravel ? '含弹速' : '纯射击 + 扳机延迟'}</span></div>
     <div class="ttk-plot-wrap"><svg class="ttk-plot" viewBox="0 0 ${dimensions.width} ${dimensions.height}" role="group" aria-labelledby="${uid}-title ${uid}-desc">
       <title id="${uid}-title">不同距离下的武器 TTK 对比</title><desc id="${uid}-desc">横轴是距离，单位米；纵轴是击杀时间，单位毫秒。点击图表选择距离，聚焦图表后可用左右方向键调整。</desc>
       <defs><clipPath id="${uid}-clip"><rect x="${dimensions.left - 1}" y="${dimensions.top - 3}" width="${plotWidth + 2}" height="${plotHeight + 6}"/></clipPath></defs>
-      ${grids}${xTicks}<text x="${dimensions.left}" y="13" class="ttk-unit-text">TTK / ms</text><text x="${dimensions.width - dimensions.right}" y="${dimensions.height - 2}" text-anchor="end" class="ttk-unit-text">距离 / m</text>
+      ${grids}${xTicks}<text x="${dimensions.left - 13}" y="13" text-anchor="end" class="ttk-unit-text">TTK / ms</text><text x="${dimensions.width - dimensions.right}" y="${dimensions.height - 2}" text-anchor="end" class="ttk-unit-text">距离 / m</text>
       <g clip-path="url(#${uid}-clip)">${paths}</g>
-      <g class="ttk-crosshair" aria-hidden="true"><line class="ttk-cursor-line" x1="${x(selected)}" x2="${x(selected)}" y1="${dimensions.top}" y2="${dimensions.height - dimensions.bottom}"/>${prepared.map((item, index) => { const value = sample(item.allPoints, selected); return `<circle class="ttk-cursor-dot" data-series="${index}" cx="${x(selected)}" cy="${y(value?.ttk ?? 0)}"${value ? '' : ' visibility="hidden"'} r="4.5" fill="${item.color}"/>`; }).join('')}<rect class="ttk-cursor-tag-bg" x="${x(selected) - 29}" y="${dimensions.top - 19}" width="58" height="19" rx="3"/><text class="ttk-cursor-tag" x="${x(selected)}" y="${dimensions.top - 6}" text-anchor="middle">${number(selected, 1)} m</text></g>
+      <g class="ttk-crosshair" aria-hidden="true"><line class="ttk-cursor-line" x1="${x(selected)}" x2="${x(selected)}" y1="${dimensions.top}" y2="${dimensions.height - dimensions.bottom}"/>${prepared.map((item, index) => { const value = sample(item.allPoints, selected); return `<circle class="ttk-cursor-dot" data-series="${index}" cx="${x(selected)}" cy="${y(value?.ttk ?? 0)}"${value ? '' : ' visibility="hidden"'} r="4.5" fill="${item.color}"/>`; }).join('')}<rect class="ttk-cursor-tag-bg" x="${tagX(selected) - tagWidth / 2}" y="${dimensions.top - 19}" width="${tagWidth}" height="19" rx="3"/><text class="ttk-cursor-tag" x="${tagX(selected)}" y="${dimensions.top - 6}" text-anchor="middle">${number(selected, 1)} m</text></g>
       <rect class="ttk-interaction" x="${dimensions.left}" y="${dimensions.top}" width="${plotWidth}" height="${plotHeight}" fill="transparent" tabindex="0" role="slider" aria-label="查看距离" aria-valuemin="0" aria-valuemax="${maximumDistance}" aria-valuenow="${selected}" aria-valuetext="${number(selected, 1)} 米"/>
-    </svg><div class="ttk-tooltip" hidden></div></div>
+    </svg><div class="ttk-tooltip" hidden tabindex="0" role="region" aria-label="当前距离的武器比较"></div></div>
     <div class="ttk-chart-footer"><span>点击曲线区域选择距离</span><span>← → 调整距离</span></div><div class="ttk-chart-live sr-only" aria-live="polite"></div>
   </div>`;
   const svg = container.querySelector('.ttk-plot');
@@ -182,13 +196,34 @@ export function renderChart(container, { series = [], maxDistance = 100, health 
   const tag = container.querySelector('.ttk-cursor-tag');
   const tagBackground = container.querySelector('.ttk-cursor-tag-bg');
   const dots = [...container.querySelectorAll('.ttk-cursor-dot')];
+  const legendItems = [...container.querySelectorAll('[data-series-legend]')];
+  const pathGroups = [...container.querySelectorAll('[data-series-path]')];
+  let emphasized = null;
+  const emphasize = (index) => {
+    emphasized = emphasized === index ? null : index;
+    legendItems.forEach((element, itemIndex) => {
+      element.classList.toggle('is-emphasized', itemIndex === emphasized);
+      element.classList.toggle('is-muted', emphasized !== null && itemIndex !== emphasized);
+      element.setAttribute('aria-pressed', String(itemIndex === emphasized));
+    });
+    pathGroups.forEach((element, itemIndex) => {
+      element.classList.toggle('is-emphasized', itemIndex === emphasized);
+      element.classList.toggle('is-muted', emphasized !== null && itemIndex !== emphasized);
+      dots[itemIndex].classList.toggle('is-muted', emphasized !== null && itemIndex !== emphasized);
+    });
+    if (emphasized !== null) {
+      const activeGroup = pathGroups[emphasized];
+      activeGroup.parentNode.append(activeGroup);
+    }
+  };
+  legendItems.forEach((element, index) => element.addEventListener('click', () => emphasize(index), { signal: controller.signal }));
   let keyboardDistance = selected;
   const drawCursor = (distance) => {
     const position = x(distance);
     cursorLine.setAttribute('x1', position); cursorLine.setAttribute('x2', position);
-    const tagPosition = clamp(position, dimensions.left + 29, dimensions.width - dimensions.right - 29);
+    const tagPosition = tagX(distance);
     tag.setAttribute('x', tagPosition); tag.textContent = `${number(distance, 1)} m`;
-    tagBackground.setAttribute('x', tagPosition - 29);
+    tagBackground.setAttribute('x', tagPosition - tagWidth / 2);
     const samples = prepared.map((item) => ({ ...item, value: sample(item.allPoints, distance) }));
     samples.forEach((item, index) => { dots[index].setAttribute('visibility', item.value ? 'visible' : 'hidden'); dots[index].setAttribute('cx', position); if (item.value) dots[index].setAttribute('cy', y(item.value.ttk)); });
     return samples;
@@ -200,7 +235,7 @@ export function renderChart(container, { series = [], maxDistance = 100, health 
   };
   const showTooltip = (distance, event) => {
     const samples = drawCursor(distance);
-    tooltip.innerHTML = `<strong>${number(distance, 1)}<small> m</small></strong>${samples.map((item) => `<div class="ttk-tooltip-row"><i style="background:${item.color}"></i><span>${escapeHtml(item.name)}</span><b>${item.value ? `${number(item.value.ttk, 1)}<small> ms</small>` : '无法击杀'}</b>${finite(item.value?.btk) ? `<em>${number(item.value.btk, 2)} 发</em>` : ''}</div>`).join('')}`;
+    tooltip.innerHTML = `<strong>${number(distance, 1)}<small> m</small></strong>${samples.map((item) => `<div class="ttk-tooltip-row"><i style="background:${item.color}"></i><span>${escapeHtml(item.name)}</span><b>${item.value ? `${number(item.value.ttk, 1)}<small> ms</small>` : '无法击杀'}</b>${finite(item.value?.btk) ? `<em>${number(Math.ceil(item.value.btk), 0)} 发</em>` : ''}</div>`).join('')}`;
     tooltip.hidden = false;
     const rect = wrap.getBoundingClientRect();
     const desiredX = event ? event.clientX - rect.left + 15 : (x(distance) / dimensions.width * rect.width) + 15;
@@ -220,7 +255,7 @@ export function renderChart(container, { series = [], maxDistance = 100, health 
     restoreFocus(container, '.ttk-interaction', hadFocus);
   };
   interaction.addEventListener('pointermove', (event) => showTooltip(locate(event), event), { signal: controller.signal });
-  interaction.addEventListener('pointerleave', () => { tooltip.hidden = true; drawCursor(keyboardDistance); }, { signal: controller.signal });
+  wrap.addEventListener('pointerleave', () => { tooltip.hidden = true; drawCursor(keyboardDistance); }, { signal: controller.signal });
   interaction.addEventListener('click', (event) => commit(locate(event)), { signal: controller.signal });
   interaction.addEventListener('keydown', (event) => {
     const increment = event.shiftKey ? 5 : 1;
