@@ -2,7 +2,7 @@
  * Weapon Lab calculation model. Times are milliseconds; distances metres.
  * Each range stores base damage, while body multipliers apply at every range.
  * Base damage and final body damage are rounded to integers. Global body
- * multipliers are rounded to one decimal. These canonical values drive all
+ * multipliers are rounded to two decimals. These canonical values drive all
  * calculations, not merely their display. Decimal half-up rounding uses exact
  * integer arithmetic, avoiding binary floating-point half-boundary errors.
  */
@@ -16,6 +16,9 @@ export const BODY_PARTS = Object.freeze([
   { id: 'thigh', label: '大腿' },
   { id: 'calf', label: '小腿' },
 ].map(Object.freeze));
+
+export const MULTIPLIER_DIGITS = 2;
+const MULTIPLIER_SCALE = 10n ** BigInt(MULTIPLIER_DIGITS);
 
 export const DEFAULT_LIMITS = Object.freeze({
   maxStates: 20000,
@@ -56,11 +59,11 @@ function roundedBaseDamage(value) {
 export function deriveDamage(baseDamage, multiplier) {
   const base = roundedBaseDamage(baseDamage);
   if (!nonnegative(multiplier)) fail('部位倍率必须是非负有限数值。');
-  const canonicalMultiplier = roundHalfUp(multiplier, 1);
+  const canonicalMultiplier = roundHalfUp(multiplier, MULTIPLIER_DIGITS);
   const baseTicks = decimalParts(base).digits;
   const multiplierParts = decimalParts(canonicalMultiplier);
-  const multiplierTicks = multiplierParts.digits * 10n ** BigInt(1 - multiplierParts.decimals);
-  const result = Number((baseTicks * multiplierTicks + 5n) / 10n);
+  const multiplierTicks = multiplierParts.digits * 10n ** BigInt(MULTIPLIER_DIGITS - multiplierParts.decimals);
+  const result = Number((baseTicks * multiplierTicks + MULTIPLIER_SCALE / 2n) / MULTIPLIER_SCALE);
   if (!nonnegative(result)) fail('部位伤害超出可计算范围。');
   return result;
 }
@@ -71,7 +74,7 @@ function normalizeDamageFields(weapon) {
     if (record(range) && nonnegative(range.damage)) range.damage = roundHalfUp(range.damage);
   }
   if (record(weapon.multipliers)) for (const part of PART_IDS) {
-    if (nonnegative(weapon.multipliers[part])) weapon.multipliers[part] = roundHalfUp(weapon.multipliers[part], 1);
+    if (nonnegative(weapon.multipliers[part])) weapon.multipliers[part] = roundHalfUp(weapon.multipliers[part], MULTIPLIER_DIGITS);
   }
   return weapon;
 }
@@ -185,8 +188,8 @@ export function inferMultiplier(baseDamage, bodyDamage) {
   const body = roundHalfUp(bodyDamage);
   const baseTicks = decimalParts(base).digits;
   const bodyTicks = decimalParts(body).digits;
-  const tenths = (bodyTicks * 20n + baseTicks) / (baseTicks * 2n);
-  const result = Number(`${tenths}e-1`);
+  const multiplierTicks = (bodyTicks * MULTIPLIER_SCALE * 2n + baseTicks) / (baseTicks * 2n);
+  const result = Number(`${multiplierTicks}e-${MULTIPLIER_DIGITS}`);
   if (!Number.isFinite(result)) fail('推算倍率超出可计算范围。');
   return result;
 }

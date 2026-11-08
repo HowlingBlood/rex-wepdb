@@ -1,6 +1,6 @@
-import { BODY_PARTS, calculate } from './engine.js';
-import { renderChart, getSeriesStyle } from './visuals.js';
-import { diffDatabases } from './data-core.js';
+import { BODY_PARTS, calculate, MULTIPLIER_DIGITS } from './engine.js?v=1.2.1';
+import { renderChart, getSeriesStyle } from './visuals.js?v=1.2.1';
+import { diffDatabases } from './data-core.js?v=1.2.1';
 
 const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character]));
 const number = (value, digits = 1) => Number.isFinite(value) ? new Intl.NumberFormat('zh-CN', {maximumFractionDigits:digits}).format(value) : value === Infinity ? '∞' : '—';
@@ -14,7 +14,7 @@ const unitFor = key => key === 'velocity' ? ' m/s' : /(?:triggerDelayMs|cycleMs|
 
 function valueText(value, field = {}) {
   if(value === null || value === undefined || value === '') return '—';
-  if(finite(value)) return field.key?.startsWith('multipliers.') ? `×${value.toFixed(1)}` : `${number(value,3)}${unitFor(field.key || '')}`;
+  if(finite(value)) return field.key?.startsWith('multipliers.') ? `×${value.toFixed(MULTIPLIER_DIGITS)}` : `${number(value,3)}${unitFor(field.key || '')}`;
   if(typeof value === 'string' || typeof value === 'boolean') return String(value);
   if(Array.isArray(value)) return value.map(item => typeof item === 'object' ? valueText(item) : String(item)).join(' / ');
   if(value.type && value.id) return `${value.name || TYPE_NAMES[value.type] || value.type}${finite(value.rpm) ? ` · ${number(value.rpm)} RPM` : ''}`;

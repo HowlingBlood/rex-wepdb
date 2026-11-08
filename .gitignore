@@ -11,3 +11,6 @@ README.md
 tests/
 verification/
 openai/
+启动.cmd
+启动访客页.cmd
+.gitignore

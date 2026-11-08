@@ -1,4 +1,4 @@
-import { BODY_PARTS, deriveDamage, normalizeDatabase, rangeAt, validateDatabase } from './engine.js';
+import { BODY_PARTS, deriveDamage, normalizeDatabase, rangeAt, validateDatabase } from './engine.js?v=1.2.1';
 
 const isRecord = value => value !== null && typeof value === 'object' && !Array.isArray(value);
 const nonempty = value => typeof value === 'string' && value.trim().length > 0;
