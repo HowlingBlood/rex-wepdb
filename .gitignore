@@ -4,3 +4,9 @@ artifacts/
 *.log
 site/
 .tools/
+.openai/
+README.md
+启动.cmd
+启动访客页.cmd
+tests/
+verification/
