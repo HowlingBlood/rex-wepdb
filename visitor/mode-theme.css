@@ -1,0 +1,151 @@
+/* WZ-only color overrides. MP keeps the owner's existing gold theme. */
+.visitor-app[data-mode="wz"] {
+  --accent: #57bbef;
+  --wz-accent-hover: #84cff4;
+  --wz-accent-surface: #192a33;
+  --wz-accent-surface-strong: #203744;
+  --wz-accent-border: #3e7189;
+  --wz-accent-muted: #9fc3d4;
+}
+
+/* Controls, navigation and the weapon roster. */
+.visitor-app[data-mode="wz"] input:focus,
+.visitor-app[data-mode="wz"] select:focus,
+.visitor-app[data-mode="wz"] textarea:focus {
+  border-color: var(--accent);
+}
+
+.visitor-app[data-mode="wz"] .brand-mark {
+  border-color: var(--wz-accent-border);
+}
+
+.visitor-app[data-mode="wz"] .button:not(.ghost):not(.subtle):not(.danger) {
+  color: #101c23;
+}
+
+.visitor-app[data-mode="wz"] .button:not(.ghost):not(.subtle):not(.danger):hover {
+  background: var(--wz-accent-hover);
+}
+
+.visitor-app[data-mode="wz"] .button.subtle:hover {
+  background: var(--wz-accent-surface-strong);
+  border-color: var(--wz-accent-border);
+}
+
+.visitor-app[data-mode="wz"] .button.danger:hover {
+  background: #302320;
+}
+
+.visitor-app[data-mode="wz"] .visitor-mode-buttons button.active,
+.visitor-app[data-mode="wz"] .weapon-row.active {
+  background: var(--wz-accent-surface);
+  border-color: var(--wz-accent-border);
+}
+
+.visitor-app[data-mode="wz"] .visitor-mode-buttons button.active small {
+  color: var(--wz-accent-muted);
+}
+
+.visitor-app[data-mode="wz"] .segmented button.active {
+  background: var(--wz-accent-surface-strong);
+}
+
+.visitor-app[data-mode="wz"] .tiny-cross,
+.visitor-app[data-mode="wz"] .app-footer b {
+  color: var(--accent);
+}
+
+/* Selected results and supporting notes keep the existing dark surfaces. */
+.visitor-app[data-mode="wz"] .stat-card.primary,
+.visitor-app[data-mode="wz"] .selected-part,
+.visitor-app[data-mode="wz"] .tag.demo,
+.visitor-app[data-mode="wz"] .hx-status-changed,
+.visitor-app[data-mode="wz"] .hx-result-delta {
+  background: var(--wz-accent-surface);
+  border-color: var(--wz-accent-border);
+}
+
+.visitor-app[data-mode="wz"] .range-table tr.current,
+.visitor-app[data-mode="wz"] .damage-input-table tr.selected {
+  background: var(--wz-accent-surface);
+}
+
+.visitor-app[data-mode="wz"] .selected-part small,
+.visitor-app[data-mode="wz"] .mode-pending-note,
+.visitor-app[data-mode="wz"] .calc-note,
+.visitor-app[data-mode="wz"] .multiplier-note,
+.visitor-app[data-mode="wz"] .hx-old-name {
+  color: var(--wz-accent-muted);
+}
+
+.visitor-app[data-mode="wz"] .notice {
+  background: #18252d;
+  border-color: #355b6c;
+  color: #b4d0dc;
+}
+
+.visitor-app[data-mode="wz"] .hx-direction-mixed {
+  color: #a4d9f0;
+}
+
+.visitor-app[data-mode="wz"] .app-dialog {
+  border-color: #3e5868;
+}
+
+.visitor-app[data-mode="wz"] .toast:not(.error) {
+  background: #20313a;
+  border-color: #47778a;
+  color: #ddecf2;
+}
+
+/* Only anatomical hover/selection accents change; opacity still conveys data. */
+.visitor-app[data-mode="wz"] .anatomy-zone:hover .anatomy-region>path:not(.anatomy-detail),
+.visitor-app[data-mode="wz"] .anatomy-zone:focus-visible .anatomy-region>path:not(.anatomy-detail) {
+  fill: rgba(87, 187, 239, .22);
+  stroke: var(--wz-accent-hover);
+}
+
+.visitor-app[data-mode="wz"] .anatomy-zone:hover .anatomy-annotation polyline,
+.visitor-app[data-mode="wz"] .anatomy-zone:focus-visible .anatomy-annotation polyline {
+  stroke: var(--wz-accent-hover);
+}
+
+.visitor-app[data-mode="wz"] .anatomy-zone:hover .anatomy-label,
+.visitor-app[data-mode="wz"] .anatomy-zone:hover .anatomy-number,
+.visitor-app[data-mode="wz"] .anatomy-zone:focus-visible .anatomy-label,
+.visitor-app[data-mode="wz"] .anatomy-zone:focus-visible .anatomy-number {
+  fill: #ade2f8;
+}
+
+.visitor-app[data-mode="wz"] .anatomy-zone.is-selected .anatomy-region>path:not(.anatomy-detail) {
+  fill: rgba(87, 187, 239, .27);
+  stroke: var(--accent);
+}
+
+.visitor-app[data-mode="wz"] .anatomy-zone.is-selected .anatomy-annotation polyline {
+  stroke: var(--accent);
+}
+
+.visitor-app[data-mode="wz"] .anatomy-zone.is-selected .anatomy-annotation circle,
+.visitor-app[data-mode="wz"] .anatomy-zone.is-selected .anatomy-label,
+.visitor-app[data-mode="wz"] .anatomy-zone.is-selected .anatomy-number {
+  fill: var(--accent);
+}
+
+.visitor-app[data-mode="wz"] .anatomy-selection-dot {
+  background: var(--accent);
+}
+
+/* Chart chrome follows WZ; series colors and buff/nerf colors stay independent. */
+.visitor-app[data-mode="wz"] .ttk-cursor-line,
+.visitor-app[data-mode="wz"] .ttk-interaction:focus-visible {
+  stroke: var(--accent);
+}
+
+.visitor-app[data-mode="wz"] .ttk-cursor-tag-bg {
+  fill: var(--wz-accent-surface-strong);
+}
+
+.visitor-app[data-mode="wz"] .ttk-cursor-tag {
+  fill: #a4d9f0;
+}

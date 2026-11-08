@@ -56,6 +56,7 @@ function renderState(title,description,{error=false,loading=false}={}){
   main.innerHTML=`<div class="visitor-state"><span class="eyebrow">${loading?'LOADING DATABASE':error?'DATABASE UNAVAILABLE':'DATA COMING SOON'}</span><h1>${esc(title)}</h1><p>${esc(description)}</p><div class="state-actions">${error?'<button class="button" data-action="retry-data">重新读取</button>':''}<button class="button ghost" data-action="calculator">自由试算 ↗</button></div></div>`;
 }
 function render(){
+  document.body.dataset.mode=state.modeId||'';
   cleanupVisuals();renderHeader();renderSidebar();
   if(state.view==='calculator'){renderCalculator();return;}
   if(state.view==='analysis'&&state.tempActive&&state.temp){renderAnalysis();return;}
